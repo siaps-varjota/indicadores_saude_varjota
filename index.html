@@ -145,12 +145,12 @@
         download: true,
         skipEmptyLines: true,
         complete: function(results) {
-          let cabecalhoGlobal1 = results.data[4].slice(1, 16); // Colunas B a P
+          let cabecalhoGlobal1 = results.data[4].slice(1, 15); // Colunas B a O (15 colunas - 1 = 14)
           let dados1 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 14, coluna O) para remover acentos e espaços
+          // Normalizar a coluna de status (índice 13, coluna N) para remover acentos e espaços
           dados1 = dados1.map(row => {
-            row[14] = row[14] ? row[14].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            row[13] = row[13] ? row[13].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
 
@@ -163,13 +163,13 @@
 
           let tbody1 = document.querySelector("#tabela1 tbody");
           dados1.forEach(row => {
-            if (row.length > 15) { // Verifica se tem pelo menos 16 colunas (A a P, usamos B a P)
+            if (row.length > 14) { // Verifica se tem pelo menos 15 colunas (A a O, usamos B a O)
               let tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
                 <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
                 <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td><td>${row[12] || ''}</td>
-                <td>${row[13] || ''}</td><td>${row[14] || ''}</td><td>${row[15] || ''}</td>
+                <td>${row[13] || ''}</td><td>${row[14] || ''}</td>
               `;
               tbody1.appendChild(tr);
             }
@@ -191,8 +191,8 @@
             }
           });
 
-          // Filtro por Status (coluna O, índice 14 no CSV, 13 na tabela exibida)
-          let statuses1 = [...new Set(dados1.map(r => r[14]))].sort();
+          // Filtro por Status (coluna N, índice 13 no CSV, 12 na tabela exibida)
+          let statuses1 = [...new Set(dados1.map(r => r[13]))].sort();
           let filtroStatus1 = document.getElementById("filtroStatus1");
           statuses1.forEach(status => {
             if (status && status.trim() !== "") {
@@ -221,11 +221,11 @@
             // Aplica filtro na coluna de equipe (coluna 0, correspondente à B no CSV)
             tabela1.column(0).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false).draw();
 
-            // Aplica filtro na coluna de status (coluna 13, correspondente à O no CSV)
+            // Aplica filtro na coluna de status (coluna 12, correspondente à N no CSV)
             if (statusFilter) {
-              tabela1.column(13).search('^' + statusFilter + '$', true, false).draw();
+              tabela1.column(12).search('^' + statusFilter + '$', true, false).draw();
             } else {
-              tabela1.column(13).search('', true, false).draw();
+              tabela1.column(12).search('', true, false).draw();
             }
 
             // Depuração: log dos dados filtrados
@@ -256,7 +256,7 @@
             let bodyPDF1 = rows1.map(row => [
               row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
-              row[12] || '', row[13] || '', row[14] || ''
+              row[12] || '', row[13] || ''
             ]);
 
             doc.autoTable({
@@ -283,12 +283,12 @@
         download: true,
         skipEmptyLines: true,
         complete: function(results) {
-          let cabecalhoGlobal2 = results.data[4].slice(1, 14); // Colunas B a N
+          let cabecalhoGlobal2 = results.data[4].slice(1, 13); // Colunas B a M (14 colunas - 1 = 13)
           let dados2 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 12, coluna M) para remover acentos e espaços
+          // Normalizar a coluna de status (índice 11, coluna L) para remover acentos e espaços
           dados2 = dados2.map(row => {
-            row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            row[11] = row[11] ? row[11].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
 
@@ -301,13 +301,12 @@
 
           let tbody2 = document.querySelector("#tabela2 tbody");
           dados2.forEach(row => {
-            if (row.length > 13) { // Verifica se tem pelo menos 14 colunas (A a N, usamos B a N)
+            if (row.length > 12) { // Verifica se tem pelo menos 13 colunas (A a M, usamos B a M)
               let tr = document.createElement("tr");
               tr.innerHTML = `
                 <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
                 <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
                 <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td><td>${row[12] || ''}</td>
-                <td>${row[13] || ''}</td>
               `;
               tbody2.appendChild(tr);
             }
@@ -329,8 +328,8 @@
             }
           });
 
-          // Filtro por Status (coluna M, índice 12 no CSV, 11 na tabela exibida)
-          let statuses2 = [...new Set(dados2.map(r => r[12]))].sort();
+          // Filtro por Status (coluna L, índice 11 no CSV, 10 na tabela exibida)
+          let statuses2 = [...new Set(dados2.map(r => r[11]))].sort();
           let filtroStatus2 = document.getElementById("filtroStatus2");
           statuses2.forEach(status => {
             if (status && status.trim() !== "") {
@@ -359,11 +358,11 @@
             // Aplica filtro na coluna de equipe (coluna 0, correspondente à B no CSV)
             tabela2.column(0).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false).draw();
 
-            // Aplica filtro na coluna de status (coluna 11, correspondente à M no CSV)
+            // Aplica filtro na coluna de status (coluna 10, correspondente à L no CSV)
             if (statusFilter) {
-              tabela2.column(11).search('^' + statusFilter + '$', true, false).draw();
+              tabela2.column(10).search('^' + statusFilter + '$', true, false).draw();
             } else {
-              tabela2.column(11).search('', true, false).draw();
+              tabela2.column(10).search('', true, false).draw();
             }
 
             // Depuração: log dos dados filtrados
@@ -393,8 +392,7 @@
             }
             let bodyPDF2 = rows2.map(row => [
               row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
-              row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
-              row[12] || ''
+              row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || ''
             ]);
 
             doc.autoTable({
