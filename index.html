@@ -46,7 +46,7 @@
     .tab-content.active {
       display: block;
     }
-    #filtroEquipe, #filtroEquipe2, #filtroStatus1, #filtroStatus2 {
+    #filtroEquipe, #filtroEquipe2, #filtroStatus1, #filtroStatus2, #filtroQuadrimestre1, #filtroQuadrimestre2 {
       margin-bottom: 15px;
       padding: 5px;
       margin-right: 10px;
@@ -92,6 +92,10 @@
     <select id="filtroStatus1">
       <option value="">Todos</option>
     </select>
+    <label for="filtroQuadrimestre1">Filtrar por Quadrimestre: </label>
+    <select id="filtroQuadrimestre1">
+      <option value="">Todos</option>
+    </select>
     <button id="btnPdf1">Gerar PDF</button>
     <div id="erroPdf"></div>
     <table id="tabela1" class="display" style="width:100%">
@@ -110,6 +114,10 @@
     </select>
     <label for="filtroStatus2">Filtrar por Status: </label>
     <select id="filtroStatus2">
+      <option value="">Todos</option>
+    </select>
+    <label for="filtroQuadrimestre2">Filtrar por Quadrimestre: </label>
+    <select id="filtroQuadrimestre2">
       <option value="">Todos</option>
     </select>
     <button id="btnPdf2">Gerar PDF</button>
@@ -148,9 +156,10 @@
           let cabecalhoGlobal1 = results.data[4].slice(1, 15); // Colunas B a O (15 colunas - 1 = 14)
           let dados1 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 13, coluna N) para remover acentos e espaços
+          // Normalizar a coluna de status (índice 13, coluna N) e quadrimestre (índice 14, coluna O) para remover acentos e espaços
           dados1 = dados1.map(row => {
             row[13] = row[13] ? row[13].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            row[14] = row[14] ? row[14].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
 
@@ -203,6 +212,18 @@
             }
           });
 
+          // Filtro por Quadrimestre (coluna O, índice 14 no CSV, 13 na tabela exibida)
+          let quadrimestres1 = [...new Set(dados1.map(r => r[14]))].sort();
+          let filtroQuadrimestre1 = document.getElementById("filtroQuadrimestre1");
+          quadrimestres1.forEach(quad => {
+            if (quad && quad.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = quad;
+              opt.textContent = quad;
+              filtroQuadrimestre1.appendChild(opt);
+            }
+          });
+
           filtroEquipe1.addEventListener("change", function() {
             applyFilters1();
           });
@@ -211,22 +232,28 @@
             applyFilters1();
           });
 
+          filtroQuadrimestre1.addEventListener("change", function() {
+            applyFilters1();
+          });
+
           function applyFilters1() {
             let equipeFilter = filtroEquipe1.value;
             let statusFilter = filtroStatus1.value;
+            let quadrimestreFilter = filtroQuadrimestre1.value;
 
             // Depuração: log dos filtros aplicados
-            console.log("Filtro Tabela 1 - Equipe:", equipeFilter, "Status:", statusFilter);
+            console.log("Filtro Tabela 1 - Equipe:", equipeFilter, "Status:", statusFilter, "Quadrimestre:", quadrimestreFilter);
 
             // Aplica filtro na coluna de equipe (coluna 0, correspondente à B no CSV)
-            tabela1.column(0).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false).draw();
+            tabela1.column(0).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
 
             // Aplica filtro na coluna de status (coluna 12, correspondente à N no CSV)
-            if (statusFilter) {
-              tabela1.column(12).search('^' + statusFilter + '$', true, false).draw();
-            } else {
-              tabela1.column(12).search('', true, false).draw();
-            }
+            tabela1.column(12).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
+
+            // Aplica filtro na coluna de quadrimestre (coluna 13, correspondente à O no CSV)
+            tabela1.column(13).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
+
+            tabela1.draw();
 
             // Depuração: log dos dados filtrados
             console.log("Dados filtrados Tabela 1:", tabela1.rows({ search: 'applied' }).data().toArray());
@@ -260,17 +287,18 @@
             ]);
 
             doc.autoTable({
-             head: [cabecalhoGlobal1],
-             body: bodyPDF1,
-             startY: 30,
-             theme: 'striped',
-             styles: { fontSize: 7, halign: 'center' }, /* Centraliza todo o texto */
-             headStyles: { fillColor: [41, 128, 185], halign: 'center' } /* Centraliza cabeçalhos */
+              head: [cabecalhoGlobal1],
+              body: bodyPDF1,
+              startY: 30,
+              theme: 'striped',
+              styles: { fontSize: 7, halign: 'center' },
+              headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
 
             let filtroValue1 = filtroEquipe1.value || 'todas_equipes';
             let statusValue1 = filtroStatus1.value || 'todos_status';
-            doc.save(`desenvolvimento-infantil-exceto-vacinas-${filtroValue1}-${statusValue1}.pdf`);
+            let quadrimestreValue1 = filtroQuadrimestre1.value || 'todos_quadrimestres';
+            doc.save(`desenvolvimento-infantil-exceto-vacinas-${filtroValue1}-${statusValue1}-${quadrimestreValue1}.pdf`);
           });
         },
         error: function(err) {
@@ -286,9 +314,10 @@
           let cabecalhoGlobal2 = results.data[4].slice(1, 13); // Colunas B a M (14 colunas - 1 = 13)
           let dados2 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 11, coluna L) para remover acentos e espaços
+          // Normalizar a coluna de status (índice 11, coluna L) e quadrimestre (índice 12, coluna M) para remover acentos e espaços
           dados2 = dados2.map(row => {
             row[11] = row[11] ? row[11].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
 
@@ -340,6 +369,18 @@
             }
           });
 
+          // Filtro por Quadrimestre (coluna M, índice 12 no CSV, 11 na tabela exibida)
+          let quadrimestres2 = [...new Set(dados2.map(r => r[12]))].sort();
+          let filtroQuadrimestre2 = document.getElementById("filtroQuadrimestre2");
+          quadrimestres2.forEach(quad => {
+            if (quad && quad.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = quad;
+              opt.textContent = quad;
+              filtroQuadrimestre2.appendChild(opt);
+            }
+          });
+
           filtroEquipe2.addEventListener("change", function() {
             applyFilters2();
           });
@@ -348,22 +389,28 @@
             applyFilters2();
           });
 
+          filtroQuadrimestre2.addEventListener("change", function() {
+            applyFilters2();
+          });
+
           function applyFilters2() {
             let equipeFilter = filtroEquipe2.value;
             let statusFilter = filtroStatus2.value;
+            let quadrimestreFilter = filtroQuadrimestre2.value;
 
             // Depuração: log dos filtros aplicados
-            console.log("Filtro Tabela 2 - Equipe:", equipeFilter, "Status:", statusFilter);
+            console.log("Filtro Tabela 2 - Equipe:", equipeFilter, "Status:", statusFilter, "Quadrimestre:", quadrimestreFilter);
 
             // Aplica filtro na coluna de equipe (coluna 0, correspondente à B no CSV)
-            tabela2.column(0).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false).draw();
+            tabela2.column(0).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
 
             // Aplica filtro na coluna de status (coluna 10, correspondente à L no CSV)
-            if (statusFilter) {
-              tabela2.column(10).search('^' + statusFilter + '$', true, false).draw();
-            } else {
-              tabela2.column(10).search('', true, false).draw();
-            }
+            tabela2.column(10).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
+
+            // Aplica filtro na coluna de quadrimestre (coluna 11, correspondente à M no CSV)
+            tabela2.column(11).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
+
+            tabela2.draw();
 
             // Depuração: log dos dados filtrados
             console.log("Dados filtrados Tabela 2:", tabela2.rows({ search: 'applied' }).data().toArray());
@@ -396,16 +443,18 @@
             ]);
 
             doc.autoTable({
-             head: [cabecalhoGlobal2],
-             body: bodyPDF2,
-             startY: 30,
-             theme: 'striped',
-             styles: { fontSize: 7, halign: 'center' }, /* Centraliza todo o texto */
-             headStyles: { fillColor: [41, 128, 185], halign: 'center' } /* Centraliza cabeçalhos */
-           });
+              head: [cabecalhoGlobal2],
+              body: bodyPDF2,
+              startY: 30,
+              theme: 'striped',
+              styles: { fontSize: 7, halign: 'center' },
+              headStyles: { fillColor: [41, 128, 185], halign: 'center' }
+            });
+
             let filtroValue2 = filtroEquipe2.value || 'todas_equipes';
             let statusValue2 = filtroStatus2.value || 'todos_status';
-            doc.save(`desenvolvimento-infantil-vacinas-${filtroValue2}-${statusValue2}.pdf`);
+            let quadrimestreValue2 = filtroQuadrimestre2.value || 'todos_quadrimestres';
+            doc.save(`desenvolvimento-infantil-vacinas-${filtroValue2}-${statusValue2}-${quadrimestreValue2}.pdf`);
           });
         },
         error: function(err) {
