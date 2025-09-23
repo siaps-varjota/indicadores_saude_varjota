@@ -259,7 +259,11 @@
               format: 'a4'
             });
 
-            doc.text("Desenvolvimento Infantil - exceto vacinas", 14, 20);
+            let filtroValue1 = filtroEquipe1.value || 'todas_equipes';
+            let title1 = filtroValue1 === 'todas_equipes' ? 
+                "Desenvolvimento Infantil - exceto vacinas" : 
+                `Equipe ${filtroValue1} - Desenvolvimento Infantil - exceto vacinas`;
+            doc.text(title1, 14, 20);
 
             let rows1 = tabela1.rows({ search: 'applied' }).data().toArray();
             if (rows1.length === 0) {
@@ -267,22 +271,28 @@
               document.getElementById('erroPdf').style.display = 'block';
               return;
             }
-            let bodyPDF1 = rows1.map(row => [
+            let headPDF1 = filtroValue1 === 'todas_equipes' ? 
+                cabecalhoGlobal1 : 
+                cabecalhoGlobal1.slice(1); // Exclui coluna Equipe (índice 0)
+            let bodyPDF1 = rows1.map(row => filtroValue1 === 'todas_equipes' ? [
               row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
               row[12] || '', row[13] || ''
+            ] : [
+              row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '', row[6] || '',
+              row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || '',
+              row[13] || ''
             ]);
 
             doc.autoTable({
-             head: [cabecalhoGlobal1],
-             body: bodyPDF1,
-             startY: 30,
-             theme: 'striped',
-             styles: { fontSize: 7, halign: 'center' },
-             headStyles: { fillColor: [41, 128, 185], halign: 'center' }
+              head: [headPDF1],
+              body: bodyPDF1,
+              startY: 30,
+              theme: 'striped',
+              styles: { fontSize: 7, halign: 'center' },
+              headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
 
-            let filtroValue1 = filtroEquipe1.value || 'todas_equipes';
             let statusValue1 = filtroStatus1.value || 'todos_status';
             doc.save(`desenvolvimento-infantil-exceto-vacinas-${filtroValue1}-${statusValue1}.pdf`);
           });
@@ -394,7 +404,11 @@
               format: 'a4'
             });
 
-            doc.text("Desenvolvimento Infantil - vacinas", 14, 20);
+            let filtroValue2 = filtroEquipe2.value || 'todas_equipes';
+            let title2 = filtroValue2 === 'todas_equipes' ? 
+                "Desenvolvimento Infantil - vacinas" : 
+                `Equipe ${filtroValue2} - Desenvolvimento Infantil - vacinas`;
+            doc.text(title2, 14, 20);
 
             let rows2 = tabela2.rows({ search: 'applied' }).data().toArray();
             if (rows2.length === 0) {
@@ -402,20 +416,26 @@
               document.getElementById('erroPdf2').style.display = 'block';
               return;
             }
-            let bodyPDF2 = rows2.map(row => [
+            let headPDF2 = filtroValue2 === 'todas_equipes' ? 
+                cabecalhoGlobal2 : 
+                cabecalhoGlobal2.slice(1); // Exclui coluna Equipe (índice 0)
+            let bodyPDF2 = rows2.map(row => filtroValue2 === 'todas_equipes' ? [
               row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || ''
+            ] : [
+              row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '', row[6] || '',
+              row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || ''
             ]);
 
             doc.autoTable({
-             head: [cabecalhoGlobal2],
-             body: bodyPDF2,
-             startY: 30,
-             theme: 'striped',
-             styles: { fontSize: 7, halign: 'center' },
-             headStyles: { fillColor: [41, 128, 185], halign: 'center' }
-           });
-            let filtroValue2 = filtroEquipe2.value || 'todas_equipes';
+              head: [headPDF2],
+              body: bodyPDF2,
+              startY: 30,
+              theme: 'striped',
+              styles: { fontSize: 7, halign: 'center' },
+              headStyles: { fillColor: [41, 128, 185], halign: 'center' }
+            });
+
             let statusValue2 = filtroStatus2.value || 'todos_status';
             doc.save(`desenvolvimento-infantil-vacinas-${filtroValue2}-${statusValue2}.pdf`);
           });
@@ -433,7 +453,6 @@
         skipEmptyLines: true,
         complete: function(results) {
           let cabecalhoGlobal3 = results.data[4].slice(1, 20); // Colunas B a T
-          let cabecalhoPDF3 = cabecalhoGlobal3.slice(0, 18); // Colunas B a S para o PDF
           let dados3 = results.data.slice(5);
 
           let cabecalhoRow3 = document.getElementById("cabecalho3");
@@ -501,7 +520,11 @@
               format: 'a4'
             });
 
-            doc.text("Gestação e Puerpério", 14, 20);
+            let filtroValue3 = filtroEquipe3.value || 'todas_equipes';
+            let title3 = filtroValue3 === 'todas_equipes' ? 
+                "Gestação e Puerpério" : 
+                `Equipe ${filtroValue3} - Gestação e Puerpério`;
+            doc.text(title3, 14, 20);
 
             let rows3 = tabela3.rows({ search: 'applied' }).data().toArray();
             if (rows3.length === 0) {
@@ -509,22 +532,28 @@
               document.getElementById('erroPdf3').style.display = 'block';
               return;
             }
-            let bodyPDF3 = rows3.map(row => [
+            let headPDF3 = filtroValue3 === 'todas_equipes' ? 
+                cabecalhoGlobal3.slice(0, 18) : // Colunas B a S
+                cabecalhoGlobal3.slice(1, 18); // Colunas C a S
+            let bodyPDF3 = rows3.map(row => filtroValue3 === 'todas_equipes' ? [
               row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
               row[12] || '', row[13] || '', row[14] || '', row[15] || '', row[16] || '', row[17] || ''
+            ] : [
+              row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '', row[6] || '',
+              row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || '',
+              row[13] || '', row[14] || '', row[15] || '', row[16] || '', row[17] || ''
             ]);
 
             doc.autoTable({
-             head: [cabecalhoPDF3],
-             body: bodyPDF3,
-             startY: 30,
-             theme: 'striped',
-             styles: { fontSize: 7, halign: 'center' },
-             headStyles: { fillColor: [41, 128, 185], halign: 'center' }
-           });
+              head: [headPDF3],
+              body: bodyPDF3,
+              startY: 30,
+              theme: 'striped',
+              styles: { fontSize: 7, halign: 'center' },
+              headStyles: { fillColor: [41, 128, 185], halign: 'center' }
+            });
 
-            let filtroValue3 = filtroEquipe3.value || 'todas_equipes';
             doc.save(`gestacao-e-puerperio-${filtroValue3}.pdf`);
           });
         },
