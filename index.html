@@ -289,6 +289,8 @@
         },
         error: function(err) {
           console.error("Erro ao carregar o CSV da Tabela 1:", err);
+          document.getElementById('erroPdf').innerText = 'Erro ao carregar os dados da Tabela 1. Verifique o console para detalhes.';
+          document.getElementById('erroPdf').style.display = 'block';
         }
       });
 
@@ -420,6 +422,8 @@
         },
         error: function(err) {
           console.error("Erro ao carregar o CSV da Tabela 2:", err);
+          document.getElementById('erroPdf2').innerText = 'Erro ao carregar os dados da Tabela 2. Verifique o console para detalhes.';
+          document.getElementById('erroPdf2').style.display = 'block';
         }
       });
 
@@ -429,6 +433,7 @@
         skipEmptyLines: true,
         complete: function(results) {
           let cabecalhoGlobal3 = results.data[4].slice(1, 20); // Colunas B a T
+          let cabecalhoPDF3 = cabecalhoGlobal3.slice(0, 18); // Colunas B a S para o PDF
           let dados3 = results.data.slice(5);
 
           let cabecalhoRow3 = document.getElementById("cabecalho3");
@@ -511,7 +516,7 @@
             ]);
 
             doc.autoTable({
-             head: [cabecalhoGlobal3],
+             head: [cabecalhoPDF3],
              body: bodyPDF3,
              startY: 30,
              theme: 'striped',
@@ -525,7 +530,7 @@
         },
         error: function(err) {
           console.error("Erro ao carregar o CSV da Tabela 3:", err);
-          document.getElementById('erroPdf3').innerText = 'Erro ao carregar os dados da tabela. Verifique o console para detalhes.';
+          document.getElementById('erroPdf3').innerText = 'Erro ao carregar os dados da Tabela 3. Verifique se a URL do CSV está correta e o arquivo está acessível publicamente.';
           document.getElementById('erroPdf3').style.display = 'block';
         }
       });
