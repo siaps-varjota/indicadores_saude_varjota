@@ -452,13 +452,7 @@
         download: true,
         skipEmptyLines: true,
         complete: function(results) {
-          // Ajustar para colunas B a S (exclui E, índices 1, 2, 3, [pula 4], 5 a 18)
-          let cabecalhoGlobal3 = [
-            results.data[4][1], // B
-            results.data[4][2], // C
-            results.data[4][3], // D
-            ...results.data[4].slice(5, 19) // F a S
-          ];
+          let cabecalhoGlobal3 = results.data[4].slice(1, 19); // Colunas B a S
           let dados3 = results.data.slice(5);
 
           let cabecalhoRow3 = document.getElementById("cabecalho3");
@@ -470,14 +464,13 @@
 
           let tbody3 = document.querySelector("#tabela3 tbody");
           dados3.forEach(row => {
-            if (row.length > 18) { // Verifica se tem pelo menos 19 colunas (A, B a S)
+            if (row.length > 18) { // Verifica se tem pelo menos 19 colunas (A a S)
               let tr = document.createElement("tr");
               tr.innerHTML = `
-                <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td>
-                <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td>
-                <td>${row[8] || ''}</td><td>${row[9] || ''}</td><td>${row[10] || ''}</td>
-                <td>${row[11] || ''}</td><td>${row[12] || ''}</td><td>${row[13] || ''}</td>
-                <td>${row[14] || ''}</td><td>${row[15] || ''}</td><td>${row[16] || ''}</td>
+                <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
+                <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
+                <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td><td>${row[12] || ''}</td>
+                <td>${row[13] || ''}</td><td>${row[14] || ''}</td><td>${row[15] || ''}</td><td>${row[16] || ''}</td>
                 <td>${row[17] || ''}</td><td>${row[18] || ''}</td>
               `;
               tbody3.appendChild(tr);
@@ -545,11 +538,11 @@
             let bodyPDF3 = rows3.map(row => filtroValue3 === 'todas_equipes' ? [
               row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
-              row[12] || '', row[13] || '', row[14] || '', row[15] || '', row[16] || ''
+              row[12] || '', row[13] || '', row[14] || '', row[15] || '', row[16] || '', row[17] || ''
             ] : [
               row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '', row[6] || '',
               row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || '',
-              row[13] || '', row[14] || '', row[15] || '', row[16] || ''
+              row[13] || '', row[14] || '', row[15] || '', row[16] || '', row[17] || ''
             ]);
 
             doc.autoTable({
