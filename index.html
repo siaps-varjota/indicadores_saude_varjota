@@ -584,7 +584,7 @@
             let filtroValue3 = filtroEquipe3.value || 'todas_equipes';
             let title3 = filtroValue3 === 'todas_equipes' ? 
                 "Gestação e Puerpério" : 
-                `{filtroValue3} - Gestação e Puerpério`;
+                `Equipe ${filtroValue3} - Gestação e Puerpério`;
             doc.text(title3, 14, 20);
 
             let rows3 = tabela3.rows({ search: 'applied' }).data().toArray();
