@@ -73,64 +73,6 @@
       margin-top: 10px;
       display: none;
     }
-
-    /* --- INÍCIO DAS MODIFICAÇÕES CSS --- */
-
-    /* Estilo para o container de filtros e busca */
-    .dataTables_wrapper {
-      /* Usa Flexbox para controlar o layout interno do wrapper do DataTables */
-      display: flex;
-      flex-direction: column; /* Empilha os elementos (filtros, tabela, info) */
-    }
-
-    /* Estilo para o container que engloba os filtros do DataTables (length e filter) */
-    .dataTables_filter, .dataTables_length {
-      /* Garante que os elementos de busca e 'show entries' fiquem em linha */
-      display: inline-block;
-    }
-
-    /* Novo container para os filtros personalizados e o botão PDF */
-    .filtro-container {
-      display: flex;
-      flex-wrap: wrap; /* Permite que os elementos quebrem a linha em telas menores */
-      gap: 10px; /* Espaçamento entre os elementos */
-      margin-bottom: 15px;
-      align-items: center;
-    }
-
-    /* Reposicionamento do container de busca do DataTables */
-    .dataTables_filter {
-      /* Usa 'margin-left: auto' para empurrar o campo de busca para a direita */
-      margin-left: auto;
-      /* Garante que o campo de busca ocupe o espaço restante em telas grandes */
-      flex-grow: 1;
-      text-align: right; /* Alinha o texto "Search" e o input à direita */
-    }
-
-    /* Estilo para o input de busca para que ele se adapte ao espaço disponível */
-    .dataTables_filter input {
-      width: 100%; /* Ocupa 100% do espaço disponível no seu container (.dataTables_filter) */
-      max-width: 200px; /* Limita o tamanho máximo para não ficar muito grande */
-      box-sizing: border-box;
-    }
-
-    /* Ajuste para telas menores (responsividade) */
-    @media (max-width: 768px) {
-      .filtro-container {
-        flex-direction: column; /* Empilha os filtros em telas pequenas */
-        align-items: flex-start;
-      }
-      .dataTables_filter {
-        margin-left: 0; /* Remove o auto-margin para que ele não fique flutuando */
-        text-align: left; /* Alinha à esquerda em telas pequenas */
-        width: 100%; /* Ocupa a largura total em telas pequenas */
-      }
-      .dataTables_filter input {
-        max-width: 100%; /* Permite que o input ocupe toda a largura */
-      }
-    }
-
-    /* --- FIM DAS MODIFICAÇÕES CSS --- */
   </style>
 </head>
 <body>
@@ -143,23 +85,20 @@
 
   <!-- Aba 1 -->
   <div id="tab1" class="tab-content active">
-    <!-- Container de Filtros e Botão PDF -->
-    <div class="filtro-container">
-      <label for="filtroEquipe">Filtrar por Equipe: </label>
-      <select id="filtroEquipe">
-        <option value="">Todas</option>
-      </select>
-      <label for="filtroStatus1">Filtrar por Status: </label>
-      <select id="filtroStatus1">
-        <option value="">Todos</option>
-      </select>
-      <label for="filtroQuadrimestre1">Filtrar por Quadrimestre: </label>
-      <select id="filtroQuadrimestre1">
-        <option value="">Todos</option>
-      </select>
-      <button id="btnPdf1">Gerar PDF</button>
-      <div id="erroPdf"></div>
-    </div>
+    <label for="filtroEquipe">Filtrar por Equipe: </label>
+    <select id="filtroEquipe">
+      <option value="">Todas</option>
+    </select>
+    <label for="filtroStatus1">Filtrar por Status: </label>
+    <select id="filtroStatus1">
+      <option value="">Todos</option>
+    </select>
+    <label for="filtroQuadrimestre1">Filtrar por Quadrimestre: </label>
+    <select id="filtroQuadrimestre1">
+      <option value="">Todos</option>
+    </select>
+    <button id="btnPdf1">Gerar PDF</button>
+    <div id="erroPdf"></div>
     <table id="tabela1" class="display" style="width:100%">
       <thead>
         <tr id="cabecalho1"></tr>
@@ -170,23 +109,20 @@
 
   <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
-    <!-- Container de Filtros e Botão PDF -->
-    <div class="filtro-container">
-      <label for="filtroEquipe2">Filtrar por Equipe: </label>
-      <select id="filtroEquipe2">
-        <option value="">Todas</option>
-      </select>
-      <label for="filtroStatus2">Filtrar por Status: </label>
-      <select id="filtroStatus2">
-        <option value="">Todos</option>
-      </select>
-      <label for="filtroQuadrimestre2">Filtrar por Quadrimestre: </label>
-      <select id="filtroQuadrimestre2">
-        <option value="">Todos</option>
-      </select>
-      <button id="btnPdf2">Gerar PDF</button>
-      <div id="erroPdf2"></div>
-    </div>
+    <label for="filtroEquipe2">Filtrar por Equipe: </label>
+    <select id="filtroEquipe2">
+      <option value="">Todas</option>
+    </select>
+    <label for="filtroStatus2">Filtrar por Status: </label>
+    <select id="filtroStatus2">
+      <option value="">Todos</option>
+    </select>
+    <label for="filtroQuadrimestre2">Filtrar por Quadrimestre: </label>
+    <select id="filtroQuadrimestre2">
+      <option value="">Todos</option>
+    </select>
+    <button id="btnPdf2">Gerar PDF</button>
+    <div id="erroPdf2"></div>
     <table id="tabela2" class="display" style="width:100%">
       <thead>
         <tr id="cabecalho2"></tr>
@@ -197,15 +133,12 @@
 
   <!-- Aba 3 -->
   <div id="tab3" class="tab-content">
-    <!-- Container de Filtros e Botão PDF -->
-    <div class="filtro-container">
-      <label for="filtroEquipe3">Filtrar por Equipe: </label>
-      <select id="filtroEquipe3">
-        <option value="">Todas</option>
-      </select>
-      <button id="btnPdf3">Gerar PDF</button>
-      <div id="erroPdf3"></div>
-    </div>
+    <label for="filtroEquipe3">Filtrar por Equipe: </label>
+    <select id="filtroEquipe3">
+      <option value="">Todas</option>
+    </select>
+    <button id="btnPdf3">Gerar PDF</button>
+    <div id="erroPdf3"></div>
     <table id="tabela3" class="display" style="width:100%">
       <thead>
         <tr id="cabecalho3"></tr>
@@ -292,8 +225,8 @@
             }
           });
 
-          // Filtro por Status (coluna N, índice 13 no CSV, 13 na tabela exibida)
-          let statuses1 = [...new Set(dados1.map(r => r[13]))].sort();
+          // Filtro por Status (coluna N, índice 12 no CSV, 12 na tabela exibida)
+          let statuses1 = [...new Set(dados1.map(r => r[12]))].sort();
           let filtroStatus1 = document.getElementById("filtroStatus1");
           statuses1.forEach(status => {
             if (status && status.trim() !== "") {
@@ -337,7 +270,8 @@
 
             tabela1.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
             tabela1.column(13).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
-            tabela1.column(14).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false).draw();
+            tabela1.column(14).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
+            tabela1.draw();
 
             console.log("Dados filtrados Tabela 1:", tabela1.rows({ search: 'applied' }).data().toArray());
           }
@@ -372,8 +306,8 @@
                 ['Nº', ...cabecalhoGlobal1.slice(2)]; // Exclui Equipe (índice 1)
             let bodyPDF1 = rows1.map((row, index) => filtroValue1 === 'todas_equipes' ? [
               (index + 1).toString(), row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
-              row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || '',
-              row[13] || '', row[14] || ''
+              row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
+              row[12] || '', row[13] || '', row[14] || ''
             ] : [
               (index + 1).toString(), row[2] || '', row[3] || '', row[4] || '', row[5] || '', row[6] || '',
               row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || '',
@@ -406,13 +340,13 @@
         download: true,
         skipEmptyLines: true,
         complete: function(results) {
-          let cabecalhoGlobal2 = ['Nº', ...results.data[4].slice(1, 14)]; // Adiciona "Nº" às colunas B a M
+          let cabecalhoGlobal2 = ['Nº', ...results.data[4].slice(1, 13)]; // Adiciona "Nº" às colunas B a M
           let dados2 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 12, coluna M) e quadrimestre (índice 13, coluna N)
+          // Normalizar a coluna de status (índice 11, coluna L) e quadrimestre (índice 12, coluna M)
           dados2 = dados2.map(row => {
+            row[11] = row[11] ? row[11].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
-            row[13] = row[13] ? row[13].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
 
@@ -425,7 +359,7 @@
 
           let tbody2 = document.querySelector("#tabela2 tbody");
           dados2.forEach(row => {
-            if (row.length > 13) { // Verifica se tem pelo menos 14 colunas (A + B a M)
+            if (row.length > 12) { // Verifica se tem pelo menos 13 colunas (A a M)
               let tr = document.createElement("tr");
               tr.innerHTML = `
                 <td></td> <!-- Placeholder para Nº -->
@@ -459,8 +393,8 @@
             }
           });
 
-          // Filtro por Status (coluna M, índice 12 no CSV, 12 na tabela exibida)
-          let statuses2 = [...new Set(dados2.map(r => r[12]))].sort();
+          // Filtro por Status (coluna L, índice 11 no CSV, 11 na tabela exibida)
+          let statuses2 = [...new Set(dados2.map(r => r[11]))].sort();
           let filtroStatus2 = document.getElementById("filtroStatus2");
           statuses2.forEach(status => {
             if (status && status.trim() !== "") {
@@ -471,8 +405,8 @@
             }
           });
 
-          // Filtro por Quadrimestre (coluna N, índice 13 no CSV, 13 na tabela exibida)
-          let quadrimestres2 = [...new Set(dados2.map(r => r[13]))].sort();
+          // Filtro por Quadrimestre (coluna M, índice 12 no CSV, 12 na tabela exibida)
+          let quadrimestres2 = [...new Set(dados2.map(r => r[12]))].sort();
           let filtroQuadrimestre2 = document.getElementById("filtroQuadrimestre2");
           quadrimestres2.forEach(quad => {
             if (quad && quad.trim() !== "") {
@@ -504,7 +438,8 @@
 
             tabela2.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
             tabela2.column(11).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
-            tabela2.column(12).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false).draw();
+            tabela2.column(12).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
+            tabela2.draw();
 
             console.log("Dados filtrados Tabela 2:", tabela2.rows({ search: 'applied' }).data().toArray());
           }
