@@ -47,7 +47,6 @@
       display: block;
     }
     #filtroEquipe, #filtroEquipe2, #filtroEquipe3, #filtroStatus1, #filtroStatus2, #filtroQuadrimestre1, #filtroQuadrimestre2 {
-      height: 100px; /* Aumenta a altura para visualização de múltipla escolha */
       margin-bottom: 15px;
       padding: 5px;
       margin-right: 10px;
@@ -204,17 +203,21 @@
             }
           });
 
-          let tabela1 = $('#tabela1').DataTable({
-            "pageLength": 10,
-            "drawCallback": function(settings) {
-              let api = this.api();
-              api.rows({ page: 'current' }).nodes().each(function(row, index) {
-                $(row).find('td:first').text(index + 1 + api.page.info().start);
-              });
-            }
-          });
-
-          // Filtro por Equipe (coluna B, índice 1 no CSV, 1 na tabela exibida)
+	          let tabela3 = $("#tabela3").DataTable({
+	            "pageLength": 10,
+	            "drawCallback": function(settings) {
+	              let api = this.api();
+	              api.rows({ page: 'current' }).nodes().each(function(row, index) {
+	                $(row).find('td:first').text(index + 1 + api.page.info().start);
+	              });
+	            }
+	          });
+	          // Trigger a draw to show the table initially
+	          tabela3.draw();
+	          // Trigger a draw to show the table initially
+	          tabela2.draw();
+	          // Trigger a draw to show the table initially
+	          tabela1.draw();   // Filtro por Equipe (coluna B, índice 1 no CSV, 1 na tabela exibida)
           let equipes1 = [...new Set(dados1.map(r => r[1]))].sort();
           let filtroEquipe1 = document.getElementById("filtroEquipe");
           equipes1.forEach(eq => {
@@ -295,8 +298,6 @@
 	            );
 	
 	            tabela1.draw();
-	
-	            // Remove a função de filtro após a aplicação para evitar conflitos com outras tabelas
 	            $.fn.dataTable.ext.search.pop();
 	
 	            console.log("Dados filtrados Tabela 1:", tabela1.rows({ search: 'applied' }).data().toArray());
@@ -488,8 +489,6 @@
 	            );
 	
 	            tabela2.draw();
-	
-	            // Remove a função de filtro após a aplicação para evitar conflitos com outras tabelas
 	            $.fn.dataTable.ext.search.pop();
 	
 	            console.log("Dados filtrados Tabela 2:", tabela2.rows({ search: 'applied' }).data().toArray());
@@ -634,8 +633,6 @@
 	            );
 	
 	            tabela3.draw();
-	
-	            // Remove a função de filtro após a aplicação para evitar conflitos com outras tabelas
 	            $.fn.dataTable.ext.search.pop();
 	
 	            console.log("Dados filtrados Tabela 3:", tabela3.rows({ search: 'applied' }).data().toArray());
