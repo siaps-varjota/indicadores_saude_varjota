@@ -7,9 +7,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-  <!-- Biblioteca Select2 -->
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <!-- Bibliotecas para PDF -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.25/dist/jspdf.plugin.autotable.min.js"></script>
@@ -53,7 +50,6 @@
       margin-bottom: 15px;
       padding: 5px;
       margin-right: 10px;
-      min-width: 200px; /* Ajuste para Select2 */
     }
     table {
       width: 100%;
@@ -77,9 +73,6 @@
       margin-top: 10px;
       display: none;
     }
-    .select2-container {
-      width: 100% !important;
-    }
   </style>
 </head>
 <body>
@@ -89,18 +82,19 @@
     <button class="tab-button" onclick="openTab('tab2')">Desenvolvimento Infantil - vacinas</button>
     <button class="tab-button" onclick="openTab('tab3')">Gestação e Puerpério</button>
   </div>
+
   <!-- Aba 1 -->
   <div id="tab1" class="tab-content active">
     <label for="filtroEquipe">Filtrar por Equipe: </label>
-    <select id="filtroEquipe" multiple>
+    <select id="filtroEquipe">
       <option value="">Todas</option>
     </select>
     <label for="filtroStatus1">Filtrar por Status: </label>
-    <select id="filtroStatus1" multiple>
+    <select id="filtroStatus1">
       <option value="">Todos</option>
     </select>
     <label for="filtroQuadrimestre1">Filtrar por Quadrimestre: </label>
-    <select id="filtroQuadrimestre1" multiple>
+    <select id="filtroQuadrimestre1">
       <option value="">Todos</option>
     </select>
     <button id="btnPdf1">Gerar PDF</button>
@@ -112,18 +106,19 @@
       <tbody></tbody>
     </table>
   </div>
+
   <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
     <label for="filtroEquipe2">Filtrar por Equipe: </label>
-    <select id="filtroEquipe2" multiple>
+    <select id="filtroEquipe2">
       <option value="">Todas</option>
     </select>
     <label for="filtroStatus2">Filtrar por Status: </label>
-    <select id="filtroStatus2" multiple>
+    <select id="filtroStatus2">
       <option value="">Todos</option>
     </select>
     <label for="filtroQuadrimestre2">Filtrar por Quadrimestre: </label>
-    <select id="filtroQuadrimestre2" multiple>
+    <select id="filtroQuadrimestre2">
       <option value="">Todos</option>
     </select>
     <button id="btnPdf2">Gerar PDF</button>
@@ -135,10 +130,11 @@
       <tbody></tbody>
     </table>
   </div>
+
   <!-- Aba 3 -->
   <div id="tab3" class="tab-content">
     <label for="filtroEquipe3">Filtrar por Equipe: </label>
-    <select id="filtroEquipe3" multiple>
+    <select id="filtroEquipe3">
       <option value="">Todas</option>
     </select>
     <button id="btnPdf3">Gerar PDF</button>
@@ -150,6 +146,7 @@
       <tbody></tbody>
     </table>
   </div>
+
   <script>
     function openTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -159,14 +156,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      // Inicializar Select2 nos filtros
-      $('#filtroEquipe, #filtroEquipe2, #filtroEquipe3, #filtroStatus1, #filtroStatus2, #filtroQuadrimestre1, #filtroQuadrimestre2')
-        .select2({
-          placeholder: "Selecione uma ou mais opções",
-          allowClear: true,
-          width: 'resolve'
-        });
-
       const csvUrl1 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1142482515&single=true&output=csv&t=" + new Date().getTime();
       const csvUrl2 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1899832726&single=true&output=csv&t=" + new Date().getTime();
       const csvUrl3 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA7ZEnYITSAdJO8T5LvvnDewjPeqMT57kDv_oSeuFUUznKI3FQ5pGg2Ic34k4ZShbWtONP-dvJOABQ/pub?gid=1768767677&single=true&output=csv&t=" + new Date().getTime();
@@ -177,30 +166,34 @@
         document.getElementById('erroPdf').style.display = 'block';
         return;
       }
+
       Papa.parse(csvUrl1, {
         download: true,
         skipEmptyLines: true,
         complete: function(results) {
           let cabecalhoGlobal1 = ['Nº', ...results.data[4].slice(1, 15)]; // Adiciona "Nº" às colunas B a O
           let dados1 = results.data.slice(5);
+
           // Normalizar a coluna de status (índice 13, coluna N) e quadrimestre (índice 14, coluna O)
           dados1 = dados1.map(row => {
-            row[13] = row[13] ? row[13].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             row[14] = row[14] ? row[14].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
+
           let cabecalhoRow1 = document.getElementById("cabecalho1");
           cabecalhoGlobal1.forEach(col => {
             let th = document.createElement("th");
             th.textContent = col || 'Sem Nome';
             cabecalhoRow1.appendChild(th);
           });
+
           let tbody1 = document.querySelector("#tabela1 tbody");
           dados1.forEach(row => {
-            if (row.length > 14) {
+            if (row.length > 14) { // Verifica se tem pelo menos 15 colunas (A a O)
               let tr = document.createElement("tr");
               tr.innerHTML = `
-                <td></td>
+                <td></td> <!-- Placeholder para Nº -->
                 <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
                 <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
                 <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td><td>${row[12] || ''}</td>
@@ -209,6 +202,7 @@
               tbody1.appendChild(tr);
             }
           });
+
           let tabela1 = $('#tabela1').DataTable({
             "pageLength": 10,
             "drawCallback": function(settings) {
@@ -218,7 +212,8 @@
               });
             }
           });
-          // Filtro por Equipe
+
+          // Filtro por Equipe (coluna B, índice 1 no CSV, 1 na tabela exibida)
           let equipes1 = [...new Set(dados1.map(r => r[1]))].sort();
           let filtroEquipe1 = document.getElementById("filtroEquipe");
           equipes1.forEach(eq => {
@@ -229,8 +224,9 @@
               filtroEquipe1.appendChild(opt);
             }
           });
-          // Filtro por Status
-          let statuses1 = [...new Set(dados1.map(r => r[13]))].sort();
+
+          // Filtro por Status (coluna M, índice 12 no CSV, 12 na tabela exibida)
+          let statuses1 = [...new Set(dados1.map(r => r[12]))].sort();
           let filtroStatus1 = document.getElementById("filtroStatus1");
           statuses1.forEach(status => {
             if (status && status.trim() !== "") {
@@ -240,7 +236,8 @@
               filtroStatus1.appendChild(opt);
             }
           });
-          // Filtro por Quadrimestre
+
+          // Filtro por Quadrimestre (coluna O, índice 14 no CSV, 14 na tabela exibida)
           let quadrimestres1 = [...new Set(dados1.map(r => r[14]))].sort();
           let filtroQuadrimestre1 = document.getElementById("filtroQuadrimestre1");
           quadrimestres1.forEach(quad => {
@@ -251,30 +248,34 @@
               filtroQuadrimestre1.appendChild(opt);
             }
           });
+
           filtroEquipe1.addEventListener("change", function() {
             applyFilters1();
           });
+
           filtroStatus1.addEventListener("change", function() {
             applyFilters1();
           });
+
           filtroQuadrimestre1.addEventListener("change", function() {
             applyFilters1();
           });
+
           function applyFilters1() {
-            let equipeFilter = $(filtroEquipe1).val() || [];
-            let statusFilter = $(filtroStatus1).val() || [];
-            let quadrimestreFilter = $(filtroQuadrimestre1).val() || [];
+            let equipeFilter = filtroEquipe1.value;
+            let statusFilter = filtroStatus1.value;
+            let quadrimestreFilter = filtroQuadrimestre1.value;
+
             console.log("Filtro Tabela 1 - Equipe:", equipeFilter, "Status:", statusFilter, "Quadrimestre:", quadrimestreFilter);
-            // Construir expressões regulares para múltiplos valores
-            let equipeRegex = equipeFilter.length > 0 ? `^(${equipeFilter.join('|')})$` : '';
-            let statusRegex = statusFilter.length > 0 ? `^(${statusFilter.join('|')})$` : '';
-            let quadrimestreRegex = quadrimestreFilter.length > 0 ? `^(${quadrimestreFilter.join('|')})$` : '';
-            tabela1.column(1).search(equipeRegex, true, false);
-            tabela1.column(13).search(statusRegex, true, false);
-            tabela1.column(14).search(quadrimestreRegex, true, false);
+
+            tabela1.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
+            tabela1.column(12).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
+            tabela1.column(14).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
             tabela1.draw();
+
             console.log("Dados filtrados Tabela 1:", tabela1.rows({ search: 'applied' }).data().toArray());
           }
+
           document.getElementById("btnPdf1").addEventListener("click", function() {
             if (typeof window.jspdf === 'undefined') {
               document.getElementById('erroPdf').innerText = 'Erro: Biblioteca jsPDF não carregou. Verifique o console.';
@@ -287,21 +288,22 @@
               unit: 'mm',
               format: 'a4'
             });
-            let equipeFilter = $(filtroEquipe1).val() || [];
-            let filtroValue1 = equipeFilter.length > 0 ? equipeFilter.join('-') : 'todas_equipes';
-            let title1 = filtroValue1 === 'todas_equipes' ?
-                "Desenvolvimento Infantil - exceto vacinas" :
+
+            let filtroValue1 = filtroEquipe1.value || 'todas_equipes';
+            let title1 = filtroValue1 === 'todas_equipes' ? 
+                "Desenvolvimento Infantil - exceto vacinas" : 
                 `${filtroValue1} - Desenvolvimento Infantil - exceto vacinas`;
             doc.text(title1, 14, 20);
+
             let rows1 = tabela1.rows({ search: 'applied' }).data().toArray();
             if (rows1.length === 0) {
               document.getElementById('erroPdf').innerText = 'Erro: Nenhum dado para gerar o PDF. Aplique um filtro ou verifique os dados.';
               document.getElementById('erroPdf').style.display = 'block';
               return;
             }
-            let headPDF1 = filtroValue1 === 'todas_equipes' ?
-                cabecalhoGlobal1 :
-                ['Nº', ...cabecalhoGlobal1.slice(2)]; // Exclui Equipe
+            let headPDF1 = filtroValue1 === 'todas_equipes' ? 
+                cabecalhoGlobal1 : 
+                ['Nº', ...cabecalhoGlobal1.slice(2)]; // Exclui Equipe (índice 1)
             let bodyPDF1 = rows1.map((row, index) => filtroValue1 === 'todas_equipes' ? [
               (index + 1).toString(), row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
@@ -311,6 +313,7 @@
               row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || '',
               row[13] || '', row[14] || ''
             ]);
+
             doc.autoTable({
               head: [headPDF1],
               body: bodyPDF1,
@@ -319,8 +322,9 @@
               styles: { fontSize: 7, halign: 'center' },
               headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
-            let statusValue1 = $(filtroStatus1).val().length > 0 ? $(filtroStatus1).val().join('-') : 'todos_status';
-            let quadrimestreValue1 = $(filtroQuadrimestre1).val().length > 0 ? $(filtroQuadrimestre1).val().join('-') : 'todos_quadrimestres';
+
+            let statusValue1 = filtroStatus1.value || 'todos_status';
+            let quadrimestreValue1 = filtroQuadrimestre1.value || 'todos_quadrimestres';
             doc.save(`desenvolvimento-infantil-exceto-vacinas-${filtroValue1}-${statusValue1}-${quadrimestreValue1}.pdf`);
           });
         },
@@ -338,24 +342,27 @@
         complete: function(results) {
           let cabecalhoGlobal2 = ['Nº', ...results.data[4].slice(1, 13)]; // Adiciona "Nº" às colunas B a M
           let dados2 = results.data.slice(5);
+
           // Normalizar a coluna de status (índice 11, coluna L) e quadrimestre (índice 12, coluna M)
           dados2 = dados2.map(row => {
             row[11] = row[11] ? row[11].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
+
           let cabecalhoRow2 = document.getElementById("cabecalho2");
           cabecalhoGlobal2.forEach(col => {
             let th = document.createElement("th");
             th.textContent = col || 'Sem Nome';
             cabecalhoRow2.appendChild(th);
           });
+
           let tbody2 = document.querySelector("#tabela2 tbody");
           dados2.forEach(row => {
-            if (row.length > 12) {
+            if (row.length > 12) { // Verifica se tem pelo menos 13 colunas (A a M)
               let tr = document.createElement("tr");
               tr.innerHTML = `
-                <td></td>
+                <td></td> <!-- Placeholder para Nº -->
                 <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
                 <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
                 <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td><td>${row[12] || ''}</td>
@@ -363,6 +370,7 @@
               tbody2.appendChild(tr);
             }
           });
+
           let tabela2 = $('#tabela2').DataTable({
             "pageLength": 10,
             "drawCallback": function(settings) {
@@ -372,7 +380,8 @@
               });
             }
           });
-          // Filtro por Equipe
+
+          // Filtro por Equipe (coluna B, índice 1 no CSV, 1 na tabela exibida)
           let equipes2 = [...new Set(dados2.map(r => r[1]))].sort();
           let filtroEquipe2 = document.getElementById("filtroEquipe2");
           equipes2.forEach(eq => {
@@ -383,7 +392,8 @@
               filtroEquipe2.appendChild(opt);
             }
           });
-          // Filtro por Status
+
+          // Filtro por Status (coluna L, índice 11 no CSV, 11 na tabela exibida)
           let statuses2 = [...new Set(dados2.map(r => r[11]))].sort();
           let filtroStatus2 = document.getElementById("filtroStatus2");
           statuses2.forEach(status => {
@@ -394,7 +404,8 @@
               filtroStatus2.appendChild(opt);
             }
           });
-          // Filtro por Quadrimestre
+
+          // Filtro por Quadrimestre (coluna M, índice 12 no CSV, 12 na tabela exibida)
           let quadrimestres2 = [...new Set(dados2.map(r => r[12]))].sort();
           let filtroQuadrimestre2 = document.getElementById("filtroQuadrimestre2");
           quadrimestres2.forEach(quad => {
@@ -405,29 +416,34 @@
               filtroQuadrimestre2.appendChild(opt);
             }
           });
+
           filtroEquipe2.addEventListener("change", function() {
             applyFilters2();
           });
+
           filtroStatus2.addEventListener("change", function() {
             applyFilters2();
           });
+
           filtroQuadrimestre2.addEventListener("change", function() {
             applyFilters2();
           });
+
           function applyFilters2() {
-            let equipeFilter = $(filtroEquipe2).val() || [];
-            let statusFilter = $(filtroStatus2).val() || [];
-            let quadrimestreFilter = $(filtroQuadrimestre2).val() || [];
+            let equipeFilter = filtroEquipe2.value;
+            let statusFilter = filtroStatus2.value;
+            let quadrimestreFilter = filtroQuadrimestre2.value;
+
             console.log("Filtro Tabela 2 - Equipe:", equipeFilter, "Status:", statusFilter, "Quadrimestre:", quadrimestreFilter);
-            let equipeRegex = equipeFilter.length > 0 ? `^(${equipeFilter.join('|')})$` : '';
-            let statusRegex = statusFilter.length > 0 ? `^(${statusFilter.join('|')})$` : '';
-            let quadrimestreRegex = quadrimestreFilter.length > 0 ? `^(${quadrimestreFilter.join('|')})$` : '';
-            tabela2.column(1).search(equipeRegex, true, false);
-            tabela2.column(11).search(statusRegex, true, false);
-            tabela2.column(12).search(quadrimestreRegex, true, false);
+
+            tabela2.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
+            tabela2.column(11).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
+            tabela2.column(12).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
             tabela2.draw();
+
             console.log("Dados filtrados Tabela 2:", tabela2.rows({ search: 'applied' }).data().toArray());
           }
+
           document.getElementById("btnPdf2").addEventListener("click", function() {
             if (typeof window.jspdf === 'undefined') {
               document.getElementById('erroPdf2').innerText = 'Erro: Biblioteca jsPDF não carregou. Verifique o console.';
@@ -440,21 +456,22 @@
               unit: 'mm',
               format: 'a4'
             });
-            let equipeFilter = $(filtroEquipe2).val() || [];
-            let filtroValue2 = equipeFilter.length > 0 ? equipeFilter.join('-') : 'todas_equipes';
-            let title2 = filtroValue2 === 'todas_equipes' ?
-                "Desenvolvimento Infantil - vacinas" :
+
+            let filtroValue2 = filtroEquipe2.value || 'todas_equipes';
+            let title2 = filtroValue2 === 'todas_equipes' ? 
+                "Desenvolvimento Infantil - vacinas" : 
                 `${filtroValue2} - Desenvolvimento Infantil - vacinas`;
             doc.text(title2, 14, 20);
+
             let rows2 = tabela2.rows({ search: 'applied' }).data().toArray();
             if (rows2.length === 0) {
               document.getElementById('erroPdf2').innerText = 'Erro: Nenhum dado para gerar o PDF. Aplique um filtro ou verifique os dados.';
               document.getElementById('erroPdf2').style.display = 'block';
               return;
             }
-            let headPDF2 = filtroValue2 === 'todas_equipes' ?
-                cabecalhoGlobal2 :
-                ['Nº', ...cabecalhoGlobal2.slice(2)]; // Exclui Equipe
+            let headPDF2 = filtroValue2 === 'todas_equipes' ? 
+                cabecalhoGlobal2 : 
+                ['Nº', ...cabecalhoGlobal2.slice(2)]; // Exclui Equipe (índice 1)
             let bodyPDF2 = rows2.map((row, index) => filtroValue2 === 'todas_equipes' ? [
               (index + 1).toString(), row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || ''
@@ -462,6 +479,7 @@
               (index + 1).toString(), row[2] || '', row[3] || '', row[4] || '', row[5] || '', row[6] || '',
               row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || ''
             ]);
+
             doc.autoTable({
               head: [headPDF2],
               body: bodyPDF2,
@@ -470,8 +488,9 @@
               styles: { fontSize: 7, halign: 'center' },
               headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
-            let statusValue2 = $(filtroStatus2).val().length > 0 ? $(filtroStatus2).val().join('-') : 'todos_status';
-            let quadrimestreValue2 = $(filtroQuadrimestre2).val().length > 0 ? $(filtroQuadrimestre2).val().join('-') : 'todos_quadrimestres';
+
+            let statusValue2 = filtroStatus2.value || 'todos_status';
+            let quadrimestreValue2 = filtroQuadrimestre2.value || 'todos_quadrimestres';
             doc.save(`desenvolvimento-infantil-vacinas-${filtroValue2}-${statusValue2}-${quadrimestreValue2}.pdf`);
           });
         },
@@ -489,18 +508,20 @@
         complete: function(results) {
           let cabecalhoGlobal3 = ['Nº', ...results.data[4].slice(1, 19)]; // Adiciona "Nº" às colunas B a S
           let dados3 = results.data.slice(5);
+
           let cabecalhoRow3 = document.getElementById("cabecalho3");
           cabecalhoGlobal3.forEach(col => {
             let th = document.createElement("th");
             th.textContent = col || 'Sem Nome';
             cabecalhoRow3.appendChild(th);
           });
+
           let tbody3 = document.querySelector("#tabela3 tbody");
           dados3.forEach(row => {
-            if (row.length > 18) {
+            if (row.length > 18) { // Verifica se tem pelo menos 19 colunas (A + B a S)
               let tr = document.createElement("tr");
               tr.innerHTML = `
-                <td></td>
+                <td></td> <!-- Placeholder para Nº -->
                 <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
                 <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
                 <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td><td>${row[12] || ''}</td>
@@ -510,6 +531,7 @@
               tbody3.appendChild(tr);
             }
           });
+
           let tabela3 = $('#tabela3').DataTable({
             "pageLength": 10,
             "drawCallback": function(settings) {
@@ -519,7 +541,8 @@
               });
             }
           });
-          // Filtro por Equipe
+
+          // Filtro por Equipe (coluna B, índice 1 no CSV, 1 na tabela exibida)
           let equipes3 = [...new Set(dados3.map(r => r[1]))].sort();
           let filtroEquipe3 = document.getElementById("filtroEquipe3");
           equipes3.forEach(eq => {
@@ -530,16 +553,21 @@
               filtroEquipe3.appendChild(opt);
             }
           });
+
           filtroEquipe3.addEventListener("change", function() {
             applyFilters3();
           });
+
           function applyFilters3() {
-            let equipeFilter = $(filtroEquipe3).val() || [];
+            let equipeFilter = filtroEquipe3.value;
+
             console.log("Filtro Tabela 3 - Equipe:", equipeFilter);
-            let equipeRegex = equipeFilter.length > 0 ? `^(${equipeFilter.join('|')})$` : '';
-            tabela3.column(1).search(equipeRegex, true, false).draw();
+
+            tabela3.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false).draw();
+
             console.log("Dados filtrados Tabela 3:", tabela3.rows({ search: 'applied' }).data().toArray());
           }
+
           document.getElementById("btnPdf3").addEventListener("click", function() {
             if (typeof window.jspdf === 'undefined') {
               document.getElementById('erroPdf3').innerText = 'Erro: Biblioteca jsPDF não carregou. Verifique o console.';
@@ -552,21 +580,22 @@
               unit: 'mm',
               format: 'a4'
             });
-            let equipeFilter = $(filtroEquipe3).val() || [];
-            let filtroValue3 = equipeFilter.length > 0 ? equipeFilter.join('-') : 'todas_equipes';
-            let title3 = filtroValue3 === 'todas_equipes' ?
-                "Gestação e Puerpério" :
+
+            let filtroValue3 = filtroEquipe3.value || 'todas_equipes';
+            let title3 = filtroValue3 === 'todas_equipes' ? 
+                "Gestação e Puerpério" : 
                 `${filtroValue3} - Gestação e Puerpério`;
             doc.text(title3, 14, 20);
+
             let rows3 = tabela3.rows({ search: 'applied' }).data().toArray();
             if (rows3.length === 0) {
               document.getElementById('erroPdf3').innerText = 'Erro: Nenhum dado para gerar o PDF. Aplique um filtro ou verifique os dados.';
               document.getElementById('erroPdf3').style.display = 'block';
               return;
             }
-            let headPDF3 = filtroValue3 === 'todas_equipes' ?
-                cabecalhoGlobal3.slice(0, 18) :
-                ['Nº', ...cabecalhoGlobal3.slice(2, 18)]; // Exclui Equipe e S
+            let headPDF3 = filtroValue3 === 'todas_equipes' ? 
+                cabecalhoGlobal3.slice(0, 18) : // Colunas Nº, B a R (exclui S)
+                ['Nº', ...cabecalhoGlobal3.slice(2, 18)]; // Colunas Nº, C a R (exclui Equipe e S)
             let bodyPDF3 = rows3.map((row, index) => filtroValue3 === 'todas_equipes' ? [
               (index + 1).toString(), row[1] || '', row[2] || '', row[3] || '', row[4] || '', row[5] || '',
               row[6] || '', row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '',
@@ -576,6 +605,7 @@
               row[7] || '', row[8] || '', row[9] || '', row[10] || '', row[11] || '', row[12] || '',
               row[13] || '', row[14] || '', row[15] || '', row[16] || '', row[17] || ''
             ]);
+
             doc.autoTable({
               head: [headPDF3],
               body: bodyPDF3,
@@ -585,6 +615,7 @@
               styles: { fontSize: 7, halign: 'center' },
               headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
+
             doc.save(`gestacao-e-puerperio-${filtroValue3}.pdf`);
           });
         },
