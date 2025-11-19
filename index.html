@@ -47,6 +47,7 @@
       display: block;
     }
     #filtroEquipe, #filtroEquipe2, #filtroEquipe3, #filtroStatus1, #filtroStatus2, #filtroQuadrimestre1, #filtroQuadrimestre2 {
+      height: 100px; /* Aumenta a altura para visualização de múltipla escolha */
       margin-bottom: 15px;
       padding: 5px;
       margin-right: 10px;
@@ -86,15 +87,15 @@
   <!-- Aba 1 -->
   <div id="tab1" class="tab-content active">
     <label for="filtroEquipe">Filtrar por Equipe: </label>
-    <select id="filtroEquipe">
+    <select id="filtroEquipe" multiple>
       <option value="">Todas</option>
     </select>
     <label for="filtroStatus1">Filtrar por Status: </label>
-    <select id="filtroStatus1">
+    <select id="filtroStatus1" multiple>
       <option value="">Todos</option>
     </select>
     <label for="filtroQuadrimestre1">Filtrar por Quadrimestre: </label>
-    <select id="filtroQuadrimestre1">
+    <select id="filtroQuadrimestre1" multiple>
       <option value="">Todos</option>
     </select>
     <button id="btnPdf1">Gerar PDF</button>
@@ -110,15 +111,15 @@
   <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
     <label for="filtroEquipe2">Filtrar por Equipe: </label>
-    <select id="filtroEquipe2">
+    <select id="filtroEquipe2" multiple>
       <option value="">Todas</option>
     </select>
     <label for="filtroStatus2">Filtrar por Status: </label>
-    <select id="filtroStatus2">
+    <select id="filtroStatus2" multiple>
       <option value="">Todos</option>
     </select>
     <label for="filtroQuadrimestre2">Filtrar por Quadrimestre: </label>
-    <select id="filtroQuadrimestre2">
+    <select id="filtroQuadrimestre2" multiple>
       <option value="">Todos</option>
     </select>
     <button id="btnPdf2">Gerar PDF</button>
@@ -134,7 +135,7 @@
   <!-- Aba 3 -->
   <div id="tab3" class="tab-content">
     <label for="filtroEquipe3">Filtrar por Equipe: </label>
-    <select id="filtroEquipe3">
+    <select id="filtroEquipe3" multiple>
       <option value="">Todas</option>
     </select>
     <button id="btnPdf3">Gerar PDF</button>
@@ -174,9 +175,9 @@
           let cabecalhoGlobal1 = ['Nº', ...results.data[4].slice(1, 15)]; // Adiciona "Nº" às colunas B a O
           let dados1 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 12, coluna M) e quadrimestre (índice 14, coluna O)
+          // Normalizar a coluna de status (índice 13, coluna N) e quadrimestre (índice 14, coluna O)
           dados1 = dados1.map(row => {
-            row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            row[13] = row[13] ? row[13].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             row[14] = row[14] ? row[14].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
@@ -225,7 +226,7 @@
             }
           });
 
-          // Filtro por Status (coluna M, índice 12 no CSV, 12 na tabela exibida)
+          // Filtro por Status (coluna N, índice 12 no CSV, 12 na tabela exibida)
           let statuses1 = [...new Set(dados1.map(r => r[12]))].sort();
           let filtroStatus1 = document.getElementById("filtroStatus1");
           statuses1.forEach(status => {
@@ -249,32 +250,57 @@
             }
           });
 
-          filtroEquipe1.addEventListener("change", function() {
-            applyFilters1();
-          });
-
-          filtroStatus1.addEventListener("change", function() {
-            applyFilters1();
-          });
-
-          filtroQuadrimestre1.addEventListener("change", function() {
-            applyFilters1();
-          });
-
-          function applyFilters1() {
-            let equipeFilter = filtroEquipe1.value;
-            let statusFilter = filtroStatus1.value;
-            let quadrimestreFilter = filtroQuadrimestre1.value;
-
-            console.log("Filtro Tabela 1 - Equipe:", equipeFilter, "Status:", statusFilter, "Quadrimestre:", quadrimestreFilter);
-
-            tabela1.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
-            tabela1.column(12).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
-            tabela1.column(14).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
-            tabela1.draw();
-
-            console.log("Dados filtrados Tabela 1:", tabela1.rows({ search: 'applied' }).data().toArray());
-          }
+	          filtroEquipe1.addEventListener("change", function() {
+	            applyFilters1();
+	          });
+	
+	          filtroStatus1.addEventListener("change", function() {
+	            applyFilters1();
+	          });
+	
+	          filtroQuadrimestre1.addEventListener("change", function() {
+	            applyFilters1();
+	          });
+	
+	          function getSelectedValues(selectElement) {
+	            return Array.from(selectElement.selectedOptions)
+	              .map(option => option.value)
+	              .filter(value => value !== ""); // Exclui a opção "Todas/Todos" se for selecionada
+	          }
+	
+	          function applyFilters1() {
+	            let equipes = getSelectedValues(filtroEquipe1);
+	            let statuses = getSelectedValues(filtroStatus1);
+	            let quadrimestres = getSelectedValues(filtroQuadrimestre1);
+	
+	            console.log("Filtro Tabela 1 - Equipes:", equipes, "Status:", statuses, "Quadrimestres:", quadrimestres);
+	
+	            // Função de filtro personalizada para múltiplas escolhas
+	            $.fn.dataTable.ext.search.push(
+	              function(settings, data, dataIndex) {
+	                if (settings.nTable.id !== 'tabela1') {
+	                  return true;
+	                }
+	
+	                let equipe = data[1]; // Coluna 1 (Equipe)
+	                let status = data[12]; // Coluna 12 (Status)
+	                let quadrimestre = data[14]; // Coluna 14 (Quadrimestre)
+	
+	                let equipeMatch = equipes.length === 0 || equipes.includes(equipe);
+	                let statusMatch = statuses.length === 0 || statuses.includes(status);
+	                let quadrimestreMatch = quadrimestres.length === 0 || quadrimestres.includes(quadrimestre);
+	
+	                return equipeMatch && statusMatch && quadrimestreMatch;
+	              }
+	            );
+	
+	            tabela1.draw();
+	
+	            // Remove a função de filtro após a aplicação para evitar conflitos com outras tabelas
+	            $.fn.dataTable.ext.search.pop();
+	
+	            console.log("Dados filtrados Tabela 1:", tabela1.rows({ search: 'applied' }).data().toArray());
+	          }
 
           document.getElementById("btnPdf1").addEventListener("click", function() {
             if (typeof window.jspdf === 'undefined') {
@@ -289,7 +315,11 @@
               format: 'a4'
             });
 
-            let filtroValue1 = filtroEquipe1.value || 'todas_equipes';
+	            let equipesSelecionadas = getSelectedValues(filtroEquipe1);
+	            let statusSelecionados = getSelectedValues(filtroStatus1);
+	            let quadrimestresSelecionados = getSelectedValues(filtroQuadrimestre1);
+	
+	            let filtroValue1 = equipesSelecionadas.length > 0 ? equipesSelecionadas.join(', ') : 'todas_equipes';
             let title1 = filtroValue1 === 'todas_equipes' ? 
                 "Desenvolvimento Infantil - exceto vacinas" : 
                 `${filtroValue1} - Desenvolvimento Infantil - exceto vacinas`;
@@ -323,9 +353,9 @@
               headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
 
-            let statusValue1 = filtroStatus1.value || 'todos_status';
-            let quadrimestreValue1 = filtroQuadrimestre1.value || 'todos_quadrimestres';
-            doc.save(`desenvolvimento-infantil-exceto-vacinas-${filtroValue1}-${statusValue1}-${quadrimestreValue1}.pdf`);
+	            let statusValue1 = statusSelecionados.length > 0 ? statusSelecionados.join(', ') : 'todos_status';
+	            let quadrimestreValue1 = quadrimestresSelecionados.length > 0 ? quadrimestresSelecionados.join(', ') : 'todos_quadrimestres';
+	            doc.save(`desenvolvimento-infantil-exceto-vacinas-${filtroValue1}-${statusValue1}-${quadrimestreValue1}.pdf`);
           });
         },
         error: function(err) {
@@ -417,32 +447,53 @@
             }
           });
 
-          filtroEquipe2.addEventListener("change", function() {
-            applyFilters2();
-          });
-
-          filtroStatus2.addEventListener("change", function() {
-            applyFilters2();
-          });
-
-          filtroQuadrimestre2.addEventListener("change", function() {
-            applyFilters2();
-          });
-
-          function applyFilters2() {
-            let equipeFilter = filtroEquipe2.value;
-            let statusFilter = filtroStatus2.value;
-            let quadrimestreFilter = filtroQuadrimestre2.value;
-
-            console.log("Filtro Tabela 2 - Equipe:", equipeFilter, "Status:", statusFilter, "Quadrimestre:", quadrimestreFilter);
-
-            tabela2.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
-            tabela2.column(11).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
-            tabela2.column(12).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
-            tabela2.draw();
-
-            console.log("Dados filtrados Tabela 2:", tabela2.rows({ search: 'applied' }).data().toArray());
-          }
+	          filtroEquipe2.addEventListener("change", function() {
+	            applyFilters2();
+	          });
+	
+	          filtroStatus2.addEventListener("change", function() {
+	            applyFilters2();
+	          });
+	
+	          filtroQuadrimestre2.addEventListener("change", function() {
+	            applyFilters2();
+	          });
+	
+	          // Reutiliza getSelectedValues da Tabela 1
+	
+	          function applyFilters2() {
+	            let equipes = getSelectedValues(filtroEquipe2);
+	            let statuses = getSelectedValues(filtroStatus2);
+	            let quadrimestres = getSelectedValues(filtroQuadrimestre2);
+	
+	            console.log("Filtro Tabela 2 - Equipes:", equipes, "Status:", statuses, "Quadrimestres:", quadrimestres);
+	
+	            // Função de filtro personalizada para múltiplas escolhas
+	            $.fn.dataTable.ext.search.push(
+	              function(settings, data, dataIndex) {
+	                if (settings.nTable.id !== 'tabela2') {
+	                  return true;
+	                }
+	
+	                let equipe = data[1]; // Coluna 1 (Equipe)
+	                let status = data[11]; // Coluna 11 (Status)
+	                let quadrimestre = data[12]; // Coluna 12 (Quadrimestre)
+	
+	                let equipeMatch = equipes.length === 0 || equipes.includes(equipe);
+	                let statusMatch = statuses.length === 0 || statuses.includes(status);
+	                let quadrimestreMatch = quadrimestres.length === 0 || quadrimestres.includes(quadrimestre);
+	
+	                return equipeMatch && statusMatch && quadrimestreMatch;
+	              }
+	            );
+	
+	            tabela2.draw();
+	
+	            // Remove a função de filtro após a aplicação para evitar conflitos com outras tabelas
+	            $.fn.dataTable.ext.search.pop();
+	
+	            console.log("Dados filtrados Tabela 2:", tabela2.rows({ search: 'applied' }).data().toArray());
+	          }
 
           document.getElementById("btnPdf2").addEventListener("click", function() {
             if (typeof window.jspdf === 'undefined') {
@@ -457,7 +508,11 @@
               format: 'a4'
             });
 
-            let filtroValue2 = filtroEquipe2.value || 'todas_equipes';
+	            let equipesSelecionadas = getSelectedValues(filtroEquipe2);
+	            let statusSelecionados = getSelectedValues(filtroStatus2);
+	            let quadrimestresSelecionados = getSelectedValues(filtroQuadrimestre2);
+	
+	            let filtroValue2 = equipesSelecionadas.length > 0 ? equipesSelecionadas.join(', ') : 'todas_equipes';
             let title2 = filtroValue2 === 'todas_equipes' ? 
                 "Desenvolvimento Infantil - vacinas" : 
                 `${filtroValue2} - Desenvolvimento Infantil - vacinas`;
@@ -489,9 +544,9 @@
               headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
 
-            let statusValue2 = filtroStatus2.value || 'todos_status';
-            let quadrimestreValue2 = filtroQuadrimestre2.value || 'todos_quadrimestres';
-            doc.save(`desenvolvimento-infantil-vacinas-${filtroValue2}-${statusValue2}-${quadrimestreValue2}.pdf`);
+	            let statusValue2 = statusSelecionados.length > 0 ? statusSelecionados.join(', ') : 'todos_status';
+	            let quadrimestreValue2 = quadrimestresSelecionados.length > 0 ? quadrimestresSelecionados.join(', ') : 'todos_quadrimestres';
+	            doc.save(`desenvolvimento-infantil-vacinas-${filtroValue2}-${statusValue2}-${quadrimestreValue2}.pdf`);
           });
         },
         error: function(err) {
@@ -552,23 +607,39 @@
               opt.textContent = eq;
               filtroEquipe3.appendChild(opt);
             }
-          });
-
-          filtroEquipe3.addEventListener("change", function() {
-            applyFilters3();
-          });
-
-          function applyFilters3() {
-            let equipeFilter = filtroEquipe3.value;
-
-            console.log("Filtro Tabela 3 - Equipe:", equipeFilter);
-
-            tabela3.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false).draw();
-
-            console.log("Dados filtrados Tabela 3:", tabela3.rows({ search: 'applied' }).data().toArray());
-          }
-
-          document.getElementById("btnPdf3").addEventListener("click", function() {
+  	          filtroEquipe3.addEventListener("change", function() {
+	            applyFilters3();
+	          });
+	
+	          // Reutiliza getSelectedValues da Tabela 1
+	
+	          function applyFilters3() {
+	            let equipes = getSelectedValues(filtroEquipe3);
+	
+	            console.log("Filtro Tabela 3 - Equipes:", equipes);
+	
+	            // Função de filtro personalizada para múltiplas escolhas
+	            $.fn.dataTable.ext.search.push(
+	              function(settings, data, dataIndex) {
+	                if (settings.nTable.id !== 'tabela3') {
+	                  return true;
+	                }
+	
+	                let equipe = data[1]; // Coluna 1 (Equipe)
+	
+	                let equipeMatch = equipes.length === 0 || equipes.includes(equipe);
+	
+	                return equipeMatch;
+	              }
+	            );
+	
+	            tabela3.draw();
+	
+	            // Remove a função de filtro após a aplicação para evitar conflitos com outras tabelas
+	            $.fn.dataTable.ext.search.pop();
+	
+	            console.log("Dados filtrados Tabela 3:", tabela3.rows({ search: 'applied' }).data().toArray());
+	          }etElementById("btnPdf3").addEventListener("click", function() {
             if (typeof window.jspdf === 'undefined') {
               document.getElementById('erroPdf3').innerText = 'Erro: Biblioteca jsPDF não carregou. Verifique o console.';
               document.getElementById('erroPdf3').style.display = 'block';
@@ -581,7 +652,9 @@
               format: 'a4'
             });
 
-            let filtroValue3 = filtroEquipe3.value || 'todas_equipes';
+	            let equipesSelecionadas = getSelectedValues(filtroEquipe3);
+	
+	            let filtroValue3 = equipesSelecionadas.length > 0 ? equipesSelecionadas.join(', ') : 'todas_equipes';
             let title3 = filtroValue3 === 'todas_equipes' ? 
                 "Gestação e Puerpério" : 
                 `${filtroValue3} - Gestação e Puerpério`;
@@ -616,7 +689,7 @@
               headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
 
-            doc.save(`gestacao-e-puerperio-${filtroValue3}.pdf`);
+	            doc.save(`gestacao-puerperio-${filtroValue3}.pdf`);;
           });
         },
         error: function(err) {
