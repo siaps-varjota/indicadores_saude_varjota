@@ -174,9 +174,9 @@
           let cabecalhoGlobal1 = ['Nº', ...results.data[4].slice(1, 15)]; // Adiciona "Nº" às colunas B a O
           let dados1 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 13, coluna N) e quadrimestre (índice 14, coluna O)
+          // Normalizar a coluna de status (índice 12, coluna M) e quadrimestre (índice 14, coluna O)
           dados1 = dados1.map(row => {
-            row[13] = row[13] ? row[13].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             row[14] = row[14] ? row[14].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             return row;
           });
