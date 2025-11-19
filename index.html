@@ -228,7 +228,7 @@
           // Filtro por Status (coluna M, índice 12 no CSV, 12 na tabela exibida)
           let statuses1 = [...new Set(dados1.map(r => r[12]))].sort();
           let filtroStatus1 = document.getElementById("filtroStatus1");
-          statuses1.forEach(status => {
+          status1.forEach(status => {
             if (status && status.trim() !== "") {
               let opt = document.createElement("option");
               opt.value = status;
