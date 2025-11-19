@@ -174,7 +174,7 @@
           let cabecalhoGlobal1 = ['Nº', ...results.data[4].slice(1, 15)]; // Adiciona "Nº" às colunas B a O
           let dados1 = results.data.slice(5);
 
-          // Normalizar a coluna de status (índice 12, M coluna) e quadrimestre (índice 14, coluna O)
+          // Normalizar a coluna de status (índice 12, coluna M) e quadrimestre (índice 14, coluna O)
           dados1 = dados1.map(row => {
             row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
             row[14] = row[14] ? row[14].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
@@ -225,10 +225,10 @@
             }
           });
 
-          // Filtro por Status (M coluna, índice 12 no CSV, 12 na tabela exibida)
+          // Filtro por Status (coluna M, índice 12 no CSV, 12 na tabela exibida)
           let statuses1 = [...new Set(dados1.map(r => r[12]))].sort();
           let filtroStatus1 = document.getElementById("filtroStatus1");
-          status1.forEach(status => {
+          statuses1.forEach(status => {
             if (status && status.trim() !== "") {
               let opt = document.createElement("option");
               opt.value = status;
@@ -269,7 +269,7 @@
             console.log("Filtro Tabela 1 - Equipe:", equipeFilter, "Status:", statusFilter, "Quadrimestre:", quadrimestreFilter);
 
             tabela1.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
-            tabela1.column(13).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
+            tabela1.column(12).search(statusFilter ? '^' + statusFilter + '$' : '', true, false);
             tabela1.column(14).search(quadrimestreFilter ? '^' + quadrimestreFilter + '$' : '', true, false);
             tabela1.draw();
 
