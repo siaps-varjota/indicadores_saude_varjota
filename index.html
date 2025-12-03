@@ -81,6 +81,7 @@
     <button class="tab-button active" onclick="openTab('tab1')">Desenvolvimento Infantil - exceto vacinas</button>
     <button class="tab-button" onclick="openTab('tab2')">Desenvolvimento Infantil - vacinas</button>
     <button class="tab-button" onclick="openTab('tab3')">Gestação e Puerpério</button>
+    <button class="tab-button" onclick="openTab('tab4')">Nova Tabela</button>
   </div>
 
   <!-- Aba 1 -->
@@ -147,6 +148,30 @@
     </table>
   </div>
 
+  <!-- Aba 4 -->
+  <div id="tab4" class="tab-content">
+    <label for="filtroEquipe4">Filtrar por Equipe: </label>
+    <select id="filtroEquipe4">
+      <option value="">Todas</option>
+    </select>
+    <label for="filtroPrioridade4">Filtrar por Prioridade: </label>
+    <select id="filtroPrioridade4">
+      <option value="">Todas</option>
+    </select>
+    <label for="filtroBoasPraticas4">Filtrar por Boas Práticas: </label>
+    <select id="filtroBoasPraticas4">
+      <option value="">Todas</option>
+    </select>
+    <button id="btnPdf4">Gerar PDF</button>
+    <div id="erroPdf4"></div>
+    <table id="tabela4" class="display" style="width:100%">
+      <thead>
+        <tr id="cabecalho4"></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
   <script>
     function openTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -159,6 +184,7 @@
       const csvUrl1 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1142482515&single=true&output=csv&t=" + new Date().getTime();
       const csvUrl2 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1899832726&single=true&output=csv&t=" + new Date().getTime();
       const csvUrl3 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA7ZEnYITSAdJO8T5LvvnDewjPeqMT57kDv_oSeuFUUznKI3FQ5pGg2Ic34k4ZShbWtONP-dvJOABQ/pub?gid=1768767677&single=true&output=csv&t=" + new Date().getTime();
+      const csvUrl4 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9k_e_-jlJbu3GvtHBhvCfuUbuC7l85MV_jjZRnbsd3lIqmoKF2pLhGl1JnSfziVXze5zkGCXdPb2n/pub?output=csv&t=" + new Date().getTime();
 
       // Tabela 1
       if (typeof Papa === 'undefined' || typeof $ === 'undefined') {
@@ -498,6 +524,163 @@
           console.error("Erro ao carregar o CSV da Tabela 2:", err);
           document.getElementById('erroPdf2').innerText = 'Erro ao carregar os dados da Tabela 2. Verifique o console para detalhes.';
           document.getElementById('erroPdf2').style.display = 'block';
+        }
+      });
+
+      // Tabela 4
+      Papa.parse(csvUrl4, {
+        download: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          // Linha 4 (índice 3) contém o cabeçalho. Colunas B a L (índices 1 a 11).
+          let cabecalhoGlobal4 = ['Nº', ...results.data[3].slice(1, 12)];
+          // Linha 5 (índice 4) contém os dados.
+          let dados4 = results.data.slice(4);
+
+          // Normalizar as colunas de filtro: Equipe (B, índice 1), Prioridade (K, índice 10), Boas Práticas (L, índice 11)
+          dados4 = dados4.map(row => {
+            // Normalização para Equipe (B)
+            row[1] = row[1] ? row[1].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            // Normalização para Prioridade (K)
+            row[10] = row[10] ? row[10].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            // Normalização para Boas Práticas (L)
+            row[11] = row[11] ? row[11].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            return row;
+          });
+
+          let cabecalhoRow4 = document.getElementById("cabecalho4");
+          cabecalhoGlobal4.forEach(col => {
+            let th = document.createElement("th");
+            th.textContent = col || 'Sem Nome';
+            cabecalhoRow4.appendChild(th);
+          });
+
+          let tbody4 = document.querySelector("#tabela4 tbody");
+          dados4.forEach(row => {
+            if (row.length > 11) { // Verifica se tem pelo menos 12 colunas (A a L)
+              let tr = document.createElement("tr");
+              // Adiciona a coluna Nº e as colunas B a L (índices 1 a 11)
+              tr.innerHTML = `
+                <td></td> <!-- Placeholder para Nº -->
+                <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
+                <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
+                <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td>
+              `;
+              tbody4.appendChild(tr);
+            }
+          });
+
+          let tabela4 = $('#tabela4').DataTable({
+            "pageLength": 10,
+            "drawCallback": function(settings) {
+              let api = this.api();
+              api.rows({ page: 'current' }).nodes().each(function(row, index) {
+                $(row).find('td:first').text(index + 1 + api.page.info().start);
+              });
+            }
+          });
+
+          // Filtro por Equipe (coluna B, índice 1 no CSV, 1 na tabela exibida)
+          let equipes4 = [...new Set(dados4.map(r => r[1]))].sort();
+          let filtroEquipe4 = document.getElementById("filtroEquipe4");
+          equipes4.forEach(eq => {
+            if (eq && eq.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = eq;
+              opt.textContent = eq;
+              filtroEquipe4.appendChild(opt);
+            }
+          });
+
+          // Filtro por Prioridade (coluna K, índice 10 no CSV, 10 na tabela exibida)
+          let prioridades4 = [...new Set(dados4.map(r => r[10]))].sort();
+          let filtroPrioridade4 = document.getElementById("filtroPrioridade4");
+          prioridades4.forEach(prioridade => {
+            if (prioridade && prioridade.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = prioridade;
+              opt.textContent = prioridade;
+              filtroPrioridade4.appendChild(opt);
+            }
+          });
+
+          // Filtro por Boas Práticas (coluna L, índice 11 no CSV, 11 na tabela exibida)
+          let boasPraticas4 = [...new Set(dados4.map(r => r[11]))].sort();
+          let filtroBoasPraticas4 = document.getElementById("filtroBoasPraticas4");
+          boasPraticas4.forEach(bp => {
+            if (bp && bp.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = bp;
+              opt.textContent = bp;
+              filtroBoasPraticas4.appendChild(opt);
+            }
+          });
+
+          filtroEquipe4.addEventListener("change", function() {
+            applyFilters4();
+          });
+
+          filtroPrioridade4.addEventListener("change", function() {
+            applyFilters4();
+          });
+
+          filtroBoasPraticas4.addEventListener("change", function() {
+            applyFilters4();
+          });
+
+          function applyFilters4() {
+            let equipeFilter = filtroEquipe4.value;
+            let prioridadeFilter = filtroPrioridade4.value;
+            let boasPraticasFilter = filtroBoasPraticas4.value;
+
+            console.log("Filtro Tabela 4 - Equipe:", equipeFilter, "Prioridade:", prioridadeFilter, "Boas Práticas:", boasPraticasFilter);
+
+            // Coluna B (Equipe) é a 1ª coluna de dados (índice 1)
+            tabela4.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
+            // Coluna K (Prioridade) é a 10ª coluna de dados (índice 10)
+            tabela4.column(10).search(prioridadeFilter ? '^' + prioridadeFilter + '$' : '', true, false);
+            // Coluna L (Boas Práticas) é a 11ª coluna de dados (índice 11)
+            tabela4.column(11).search(boasPraticasFilter ? '^' + boasPraticasFilter + '$' : '', true, false);
+
+            tabela4.draw();
+          }
+
+          // Lógica de Geração de PDF (Adaptada de tabela1)
+          document.getElementById('btnPdf4').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            const tableId = '#tabela4';
+            const table = document.querySelector(tableId);
+            const dataTable = $(tableId).DataTable();
+
+            const filteredData = dataTable.rows({ search: 'applied' }).data().toArray();
+            const header = cabecalhoGlobal4;
+
+            if (filteredData.length === 0) {
+              document.getElementById('erroPdf4').innerText = 'Nenhum dado para gerar PDF. Verifique os filtros.';
+              document.getElementById('erroPdf4').style.display = 'block';
+              return;
+            }
+
+            document.getElementById('erroPdf4').style.display = 'none';
+
+            // Prepara os dados para o autoTable, removendo a coluna Nº (índice 0)
+            const body = filteredData.map(row => row.slice(1));
+
+            doc.autoTable({
+              head: [header.slice(1)], // Remove o "Nº" do cabeçalho
+              body: body,
+              startY: 20,
+              styles: { fontSize: 8 },
+              headStyles: { fillColor: [41, 128, 185] },
+              margin: { top: 10, left: 5, right: 5, bottom: 10 },
+              didDrawPage: function(data) {
+                doc.text("Nova Tabela - Indicadores de Saúde de Varjota", data.settings.margin.left, 10);
+              }
+            });
+
+            doc.save('nova_tabela_indicadores.pdf');
+          });
         }
       });
 
