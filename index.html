@@ -836,25 +836,44 @@
           }
 
           // Lógica de Geração de PDF (Adaptada para excluir a Coluna B - índice 1)
-          document.getElementById('btnPdf5').addEventListener('click', function() {
+          document.getElementById('btnPdf4').addEventListener('click', function() {
+            if (typeof window.jspdf === 'undefined') {
+              document.getElementById('erroPdf4').innerText = 'Erro: Biblioteca jsPDF não carregou. Verifique o console.';
+              document.getElementById('erroPdf4').style.display = 'block';
+              return;
+            }
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape');
-            const tableId = '#tabela5';
+            const doc = new jsPDF({
+              orientation: 'landscape',
+              unit: 'mm',
+              format: 'a4'
+            });
+            const tableId = '#tabela4';
             const dataTable = $(tableId).DataTable();
 
             const filteredData = dataTable.rows({ search: 'applied' }).data().toArray();
-            const header = cabecalhoGlobal5;
+            const header = cabecalhoGlobal4;
 
             if (filteredData.length === 0) {
-              document.getElementById('erroPdf5').innerText = 'Nenhum dado para gerar PDF. Verifique os filtros.';
-              document.getElementById('erroPdf5').style.display = 'block';
+              document.getElementById('erroPdf4').innerText = 'Nenhum dado para gerar PDF. Verifique os filtros.';
+              document.getElementById('erroPdf4').style.display = 'block';
               return;
             }
 
-            document.getElementById('erroPdf5').style.display = 'none';
+            document.getElementById('erroPdf4').style.display = 'none';
+
+            let filtroEquipeValue = filtroEquipe4.value || 'todas_equipes';
+            let title = filtroEquipeValue === 'todas_equipes' ? 
+                "Hipertensão - Indicadores de Saúde de Varjota" : 
+                `${filtroEquipeValue} - Hipertensão - Indicadores de Saúde de Varjota`;
+            
+            // Título apenas na primeira página
+            if (doc.internal.getNumberOfPages() === 1) {
+              doc.text(title, 14, 20);
+            }
 
             // Prepara os dados para o autoTable, removendo a coluna Nº (índice 0) e a Coluna B (índice 1)
-            const body = filteredData.map(row => {
+            const body = filteredData.map((row, index) => {
               // Remove o "Nº" (índice 0) e a Coluna B (índice 1)
               return [...row.slice(2)];
             });
@@ -865,16 +884,16 @@
             doc.autoTable({
               head: [pdfHeader],
               body: body,
-              startY: 20,
-              styles: { fontSize: 8 },
-              headStyles: { fillColor: [41, 128, 185] },
-              margin: { top: 10, left: 5, right: 5, bottom: 10 },
-              didDrawPage: function(data) {
-                doc.text("Diabetes - Indicadores de Saúde de Varjota", data.settings.margin.left, 10);
-              }
+              startY: 30, // Ajustado para dar espaço ao título
+              theme: 'striped',
+              styles: { fontSize: 7, halign: 'center' },
+              headStyles: { fillColor: [41, 128, 185], halign: 'center' }
             });
 
-            doc.save('diabetes_indicadores.pdf');
+            let filtroPrioridadeValue = filtroPrioridade4.value || 'todas_prioridades';
+            let filtroBoasPraticasValue = filtroBoasPraticas4.value || 'todas_boas_praticas';
+
+            doc.save(`hipertensao-${filtroEquipeValue}-${filtroPrioridadeValue}-${filtroBoasPraticasValue}.pdf`);
           });
         }
       });
