@@ -82,6 +82,7 @@
     <button class="tab-button" onclick="openTab('tab2')">Desenvolvimento Infantil - vacinas</button>
     <button class="tab-button" onclick="openTab('tab3')">Gestação e Puerpério</button>
     <button class="tab-button" onclick="openTab('tab4')">Hipertensão</button>
+    <button class="tab-button" onclick="openTab('tab5')">Diabetes</button>
   </div>
 
   <!-- Aba 1 -->
@@ -172,6 +173,30 @@
     </table>
   </div>
 
+  <!-- Aba 5 -->
+  <div id="tab5" class="tab-content">
+    <label for="filtroEquipe5">Filtrar por Equipe: </label>
+    <select id="filtroEquipe5">
+      <option value="">Todas</option>
+    </select>
+    <label for="filtroPrioridade5">Filtrar por Prioridade: </label>
+    <select id="filtroPrioridade5">
+      <option value="">Todas</option>
+    </select>
+    <label for="filtroBoasPraticas5">Filtrar por Boas Práticas: </label>
+    <select id="filtroBoasPraticas5">
+      <option value="">Todas</option>
+    </select>
+    <button id="btnPdf5">Gerar PDF</button>
+    <div id="erroPdf5"></div>
+    <table id="tabela5" class="display" style="width:100%">
+      <thead>
+        <tr id="cabecalho5"></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
   <script>
     function openTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -185,6 +210,7 @@
       const csvUrl2 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1899832726&single=true&output=csv&t=" + new Date().getTime();
       const csvUrl3 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA7ZEnYITSAdJO8T5LvvnDewjPeqMT57kDv_oSeuFUUznKI3FQ5pGg2Ic34k4ZShbWtONP-dvJOABQ/pub?gid=1768767677&single=true&output=csv&t=" + new Date().getTime();
       const csvUrl4 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9k_e_-jlJbu3GvtHBhvCfuUbuC7l85MV_jjZRnbsd3lIqmoKF2pLhGl1JnSfziVXze5zkGCXdPb2n/pub?output=csv&t=" + new Date().getTime();
+      const csvUrl5 = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbfV1Kc6st6COoy-FxrbfnC_Ac3bxobCVY_-HXj0oyXNnVo7uVld2VVJh7gAhXAPGHXlZGutzjivjP/pub?gid=1534038569&single=true&output=csv&t=" + new Date().getTime();
 
       // Tabela 1
       if (typeof Papa === 'undefined' || typeof $ === 'undefined') {
@@ -664,11 +690,17 @@
 
             document.getElementById('erroPdf4').style.display = 'none';
 
-            // Prepara os dados para o autoTable, removendo a coluna Nº (índice 0)
-            const body = filteredData.map(row => row.slice(1));
+            // Prepara os dados para o autoTable, removendo a coluna Nº (índice 0) e a Coluna B (índice 1)
+            const body = filteredData.map(row => {
+              // Remove o "Nº" (índice 0) e a Coluna B (índice 1)
+              return [...row.slice(2)];
+            });
+
+            // Remove o "Nº" (índice 0) e a Coluna B (índice 1) do cabeçalho
+            const pdfHeader = [...header.slice(2)];
 
             doc.autoTable({
-              head: [header.slice(1)], // Remove o "Nº" do cabeçalho
+              head: [pdfHeader],
               body: body,
               startY: 20,
               styles: { fontSize: 8 },
@@ -679,7 +711,170 @@
               }
             });
 
-            doc.save('nova_tabela_indicadores.pdf');
+            doc.save('hipertensao_indicadores.pdf');
+          });
+        }
+      });
+
+      // Tabela 5
+      Papa.parse(csvUrl5, {
+        download: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          // Linha 4 (índice 3) contém o cabeçalho. Colunas B a N (índices 1 a 13).
+          let cabecalhoGlobal5 = ['Nº', ...results.data[3].slice(1, 14)];
+          // Linha 5 (índice 4) contém os dados.
+          let dados5 = results.data.slice(4);
+
+          // Normalizar as colunas de filtro: Equipe (B, índice 1), Prioridade (M, índice 12), Boas Práticas (N, índice 13)
+          dados5 = dados5.map(row => {
+            // Normalização para Equipe (B)
+            row[1] = row[1] ? row[1].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            // Normalização para Prioridade (M)
+            row[12] = row[12] ? row[12].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            // Normalização para Boas Práticas (N)
+            row[13] = row[13] ? row[13].trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+            return row;
+          });
+
+          let cabecalhoRow5 = document.getElementById("cabecalho5");
+          cabecalhoGlobal5.forEach(col => {
+            let th = document.createElement("th");
+            th.textContent = col || 'Sem Nome';
+            cabecalhoRow5.appendChild(th);
+          });
+
+          let tbody5 = document.querySelector("#tabela5 tbody");
+          dados5.forEach(row => {
+            if (row.length > 13) { // Verifica se tem pelo menos 14 colunas (A a N)
+              let tr = document.createElement("tr");
+              // Adiciona a coluna Nº e as colunas B a N (índices 1 a 13)
+              tr.innerHTML = `
+                <td></td> <!-- Placeholder para Nº -->
+                <td>${row[1] || ''}</td><td>${row[2] || ''}</td><td>${row[3] || ''}</td><td>${row[4] || ''}</td>
+                <td>${row[5] || ''}</td><td>${row[6] || ''}</td><td>${row[7] || ''}</td><td>${row[8] || ''}</td>
+                <td>${row[9] || ''}</td><td>${row[10] || ''}</td><td>${row[11] || ''}</td><td>${row[12] || ''}</td>
+                <td>${row[13] || ''}</td>
+              `;
+              tbody5.appendChild(tr);
+            }
+          });
+
+          let tabela5 = $('#tabela5').DataTable({
+            "pageLength": 10,
+            "drawCallback": function(settings) {
+              let api = this.api();
+              api.rows({ page: 'current' }).nodes().each(function(row, index) {
+                $(row).find('td:first').text(index + 1 + api.page.info().start);
+              });
+            }
+          });
+
+          // Filtro por Equipe (coluna B, índice 1 no CSV, 1 na tabela exibida)
+          let equipes5 = [...new Set(dados5.map(r => r[1]))].sort();
+          let filtroEquipe5 = document.getElementById("filtroEquipe5");
+          equipes5.forEach(eq => {
+            if (eq && eq.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = eq;
+              opt.textContent = eq;
+              filtroEquipe5.appendChild(opt);
+            }
+          });
+
+          // Filtro por Prioridade (coluna M, índice 12 no CSV, 12 na tabela exibida)
+          let prioridades5 = [...new Set(dados5.map(r => r[12]))].sort();
+          let filtroPrioridade5 = document.getElementById("filtroPrioridade5");
+          prioridades5.forEach(prioridade => {
+            if (prioridade && prioridade.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = prioridade;
+              opt.textContent = prioridade;
+              filtroPrioridade5.appendChild(opt);
+            }
+          });
+
+          // Filtro por Boas Práticas (coluna N, índice 13 no CSV, 13 na tabela exibida)
+          let boasPraticas5 = [...new Set(dados5.map(r => r[13]))].sort();
+          let filtroBoasPraticas5 = document.getElementById("filtroBoasPraticas5");
+          boasPraticas5.forEach(bp => {
+            if (bp && bp.trim() !== "") {
+              let opt = document.createElement("option");
+              opt.value = bp;
+              opt.textContent = bp;
+              filtroBoasPraticas5.appendChild(opt);
+            }
+          });
+
+          filtroEquipe5.addEventListener("change", function() {
+            applyFilters5();
+          });
+
+          filtroPrioridade5.addEventListener("change", function() {
+            applyFilters5();
+          });
+
+          filtroBoasPraticas5.addEventListener("change", function() {
+            applyFilters5();
+          });
+
+          function applyFilters5() {
+            let equipeFilter = filtroEquipe5.value;
+            let prioridadeFilter = filtroPrioridade5.value;
+            let boasPraticasFilter = filtroBoasPraticas5.value;
+
+            console.log("Filtro Tabela 5 - Equipe:", equipeFilter, "Prioridade:", prioridadeFilter, "Boas Práticas:", boasPraticasFilter);
+
+            // Coluna B (Equipe) é a 1ª coluna de dados (índice 1)
+            tabela5.column(1).search(equipeFilter ? '^' + equipeFilter + '$' : '', true, false);
+            // Coluna M (Prioridade) é a 12ª coluna de dados (índice 12)
+            tabela5.column(12).search(prioridadeFilter ? '^' + prioridadeFilter + '$' : '', true, false);
+            // Coluna N (Boas Práticas) é a 13ª coluna de dados (índice 13)
+            tabela5.column(13).search(boasPraticasFilter ? '^' + boasPraticasFilter + '$' : '', true, false);
+
+            tabela5.draw();
+          }
+
+          // Lógica de Geração de PDF (Adaptada para excluir a Coluna B - índice 1)
+          document.getElementById('btnPdf5').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            const tableId = '#tabela5';
+            const dataTable = $(tableId).DataTable();
+
+            const filteredData = dataTable.rows({ search: 'applied' }).data().toArray();
+            const header = cabecalhoGlobal5;
+
+            if (filteredData.length === 0) {
+              document.getElementById('erroPdf5').innerText = 'Nenhum dado para gerar PDF. Verifique os filtros.';
+              document.getElementById('erroPdf5').style.display = 'block';
+              return;
+            }
+
+            document.getElementById('erroPdf5').style.display = 'none';
+
+            // Prepara os dados para o autoTable, removendo a coluna Nº (índice 0) e a Coluna B (índice 1)
+            const body = filteredData.map(row => {
+              // Remove o "Nº" (índice 0) e a Coluna B (índice 1)
+              return [...row.slice(2)];
+            });
+
+            // Remove o "Nº" (índice 0) e a Coluna B (índice 1) do cabeçalho
+            const pdfHeader = [...header.slice(2)];
+
+            doc.autoTable({
+              head: [pdfHeader],
+              body: body,
+              startY: 20,
+              styles: { fontSize: 8 },
+              headStyles: { fillColor: [41, 128, 185] },
+              margin: { top: 10, left: 5, right: 5, bottom: 10 },
+              didDrawPage: function(data) {
+                doc.text("Diabetes - Indicadores de Saúde de Varjota", data.settings.margin.left, 10);
+              }
+            });
+
+            doc.save('diabetes_indicadores.pdf');
           });
         }
       });
