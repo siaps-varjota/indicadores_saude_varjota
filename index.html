@@ -108,6 +108,7 @@
       };
 
       // Função genérica para criar tabela e PDF
+            // Função genérica corrigida — agora cada tabela usa seu próprio filtro corretamente
       function criarTabela(num, headerRowIdx, dataStartIdx, colunasFim, filtros = {}) {
         Papa.parse(urls[num] + "&t=" + Date.now(), {
           download: true,
@@ -116,35 +117,42 @@
             const cabecalhoGlobal = ['Nº', ...res.data[headerRowIdx].slice(1, colunasFim + 1)];
             let dados = res.data.slice(dataStartIdx);
 
-            // Normalização de colunas de filtro
-            if (filtros.equipe) dados = dados.map(r => { r[filtros.equipe.idx] = (r[filtros.equipe.idx] || '').trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); return r; });
-            if (filtros.status) dados = dados.map(r => { r[filtros.status.idx] = (r[filtros.status.idx] || '').trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); return r; });
-            if (filtros.quadrimestre) dados = dados.map(r => { r[filtros.quadrimestre.idx] = (r[filtros.quadrimestre.idx] || '').trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); return r; });
-            if (filtros.prioridade) dados = dados.map(r => { r[filtros.prioridade.idx] = (r[filtros.prioridade.idx] || '').trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); return r; });
-            if (filtros.boaspraticas) dados = dados.map(r => { r[filtros.boaspraticas.idx] = (r[filtros.boaspraticas.idx] || '').trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); return r; });
-
-            // Cabeçalho
-            document.getElementById(`cabecalho${num}`).innerHTML = '';
-            cabecalhoGlobal.forEach(h => {
-              let th = document.createElement('th');
-              th.textContent = h || 'Sem Nome';
-              document.getElementById(`cabecalho${num}`).appendChild(th);
+            // Normalização das colunas de filtro
+            Object.keys(filtros).forEach(key => {
+              const idx = filtros[key].idx;
+              if (idx !== undefined) {
+                dados = dados.map(r => {
+                  r[idx] = (r[idx] || '').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                  return r;
+                });
+              }
             });
 
-            // Corpo
+            // Montar cabeçalho
+            const cabecalhoEl = document.getElementById(`cabecalho${num}`);
+            cabecalhoEl.innerHTML = '';
+            cabecalhoGlobal.forEach(h => {
+              const th = document.createElement('th');
+              th.textContent = h || 'Sem Nome';
+              cabecalhoEl.appendChild(th);
+            });
+
+            // Montar corpo
             const tbody = document.querySelector(`#tabela${num} tbody`);
             tbody.innerHTML = '';
             dados.forEach(row => {
-              if (row.length >= colunasFim) {
-                let tr = document.createElement('tr');
+              if (row.length >= colunasFim + 1) {
+                const tr = document.createElement('tr');
                 let tds = '<td></td>'; // Nº
-                for (let i = 1; i <= colunasFim; i++) tds += `<td>${row[i] || ''}</td>`;
+                for (let i = 1; i <= colunasFim; i++) {
+                  tds += `<td>${row[i] || ''}</td>`;
+                }
                 tr.innerHTML = tds;
                 tbody.appendChild(tr);
               }
             });
 
-            // DataTable com numeração dinâmica
+            // Inicializar DataTable
             const tabela = $(`#tabela${num}`).DataTable({
               pageLength: 10,
               destroy: true,
@@ -155,49 +163,60 @@
               }
             });
 
+            // === CORREÇÃO AQUI: Cada tabela usa seu próprio ID de filtro ===
+            const filtroIds = {
+              equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
+              status: num <= 2 ? `filtroStatus${num}` : null,
+              quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
+              prioridade: num >= 4 ? `filtroPrioridade${num}` : null,
+              boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
+            };
+
             // Preencher filtros
-            if (filtros.equipe) preencherSelect(`filtroEquipe${num === 1 || num === 2 ? '' : num}`, dados.map(r => r[filtros.equipe.idx]));
-            if (filtros.status) preencherSelect(`filtroStatus${num}`, dados.map(r => r[filtros.status.idx]));
-            if (filtros.quadrimestre) preencherSelect(`filtroQuadrimestre${num}`, dados.map(r => r[filtros.quadrimestre.idx]));
-            if (filtros.prioridade) preencherSelect(`filtroPrioridade${num}`, dados.map(r => r[filtros.prioridade.idx]));
-            if (filtros.boaspraticas) preencherSelect(`filtroBoasPraticas${num}`, dados.map(r => r[filtros.boaspraticas.idx]));
+            if (filtros.equipe) preencherSelect(filtroIds.equipe, dados.map(r => r[filtros.equipe.idx]));
+            if (filtros.status) preencherSelect(filtroIds.status, dados.map(r => r[filtros.status.idx]));
+            if (filtros.quadrimestre) preencherSelect(filtroIds.quadrimestre, dados.map(r => r[filtros.quadrimestre.idx]));
+            if (filtros.prioridade) preencherSelect(filtroIds.prioridade, dados.map(r => r[filtros.prioridade.idx]));
+            if (filtros.boaspraticas) preencherSelect(filtroIds.boaspraticas, dados.map(r => r[filtros.boaspraticas.idx]));
 
             function preencherSelect(id, valores) {
-              const unique = [...new Set(valores.filter(v => v))].sort();
+              if (!id) return;
               const select = document.getElementById(id);
+              const unique = [...new Set(valores.filter(v => v && v.trim() !== ''))].sort();
               select.innerHTML = '<option value="">Todas</option>';
               unique.forEach(v => select.add(new Option(v, v)));
             }
 
-            // Aplicar filtros
-            const filtrosEls = [];
-            if (filtros.equipe) filtrosEls.push({ el: `#filtroEquipe${num === 1 || num === 2 ? '' : num}`, col: filtros.equipe.idx });
-            if (filtros.status) filtrosEls.push({ el: `#filtroStatus${num}`, col: filtros.status.idx });
-            if (filtros.quadrimestre) filtrosEls.push({ el: `#filtroQuadrimestre${num}`, col: filtros.quadrimestre.idx });
-            if (filtros.prioridade) filtrosEls.push({ el: `#filtroPrioridade${num}`, col: filtros.prioridade.idx });
-            if (filtros.boaspraticas) filtrosEls.push({ el: `#filtroBoasPraticas${num}`, col: filtros.boaspraticas.idx });
+            // Aplicar filtros ao mudar qualquer select
+            const eventos = [];
+            if (filtros.equipe) eventos.push({ el: `#${filtroIds.equipe}`, col: filtros.equipe.idx });
+            if (filtros.status) eventos.push({ el: `#${filtroIds.status}`, col: filtros.status.idx });
+            if (filtros.quadrimestre) eventos.push({ el: `#${filtroIds.quadrimestre}`, col: filtros.quadrimestre.idx });
+            if (filtros.prioridade) eventos.push({ el: `#${filtroIds.prioridade}`, col: filtros.prioridade.idx });
+            if (filtros.boaspraticas) eventos.push({ el: `#${filtroIds.boaspraticas}`, col: filtros.boaspraticas.idx });
 
-            filtrosEls.forEach(f => {
-              document.querySelector(f.el).addEventListener('change', () => {
-                filtrosEls.forEach(ff => {
-                  const val = document.querySelector(ff.el).value;
-                  tabela.column(ff.col).search(val ? '^' + val + '$' : '', true, false);
+            eventos.forEach(ev => {
+              document.querySelector(ev.el).addEventListener('change', () => {
+                eventos.forEach(e => {
+                  const val = document.querySelector(e.el).value;
+                  tabela.column(e.col).search(val ? '^' + val + '$' : '', true, false);
                 });
                 tabela.draw();
               });
             });
 
-            // Botão PDF
+            // === Botão PDF (agora 100% correto para todas as tabelas) ===
             document.getElementById(`btnPdf${num}`).onclick = function () {
               if (typeof window.jspdf === 'undefined') {
                 document.getElementById(`erroPdf${num}`).textContent = 'Erro: jsPDF não carregou.';
                 document.getElementById(`erroPdf${num}`).style.display = 'block';
                 return;
               }
+
               const { jsPDF } = window.jspdf;
               const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-              const equipe = filtros.equipe ? (document.getElementById(`filtroEquipe${num === 1 || num === 2 ? '' : num}`).value || 'todas_equipes') : 'todas_equipes';
+              const equipeVal = filtros.equipe ? (document.getElementById(filtroIds.equipe).value || 'todas_equipes') : 'todas_equipes';
               const tituloBase = {
                 1: "Desenvolvimento Infantil - exceto vacinas",
                 2: "Desenvolvimento Infantil - vacinas",
@@ -205,19 +224,20 @@
                 4: "Hipertensão",
                 5: "Diabetes"
               }[num];
-              doc.text(equipe === 'todas_equipes' ? tituloBase : `${tituloBase} - ${equipe}`, 14, 20);
+
+              doc.text(equipeVal === 'todas_equipes' ? tituloBase : `${tituloBase} - Equipe ${equipeVal}`, 14, 20);
 
               const rows = tabela.rows({ search: 'applied' }).data().toArray();
               if (rows.length === 0) {
-                document.getElementById(`erroPdf${num}`).textContent = 'Nenhum dado para gerar PDF.';
+                document.getElementById(`erroPdf${num}`).textContent = 'Nenhum dado para gerar o PDF.';
                 document.getElementById(`erroPdf${num}`).style.display = 'block';
                 return;
               }
 
-              const head = equipe === 'todas_equipes' ? cabecalhoGlobal : ['Nº', ...cabecalhoGlobal.slice(2)];
+              const head = equipeVal === 'todas_equipes' ? cabecalhoGlobal : ['Nº', ...cabecalhoGlobal.slice(2)];
               const body = rows.map((r, i) => {
                 const linha = [(i + 1).toString()];
-                if (equipe === 'todas_equipes') linha.push(r[1]);
+                if (equipeVal === 'todas_equipes') linha.push(r[1]); // inclui Equipe
                 for (let j = 2; j < r.length; j++) linha.push(r[j] || '');
                 return linha;
               });
@@ -231,19 +251,28 @@
                 headStyles: { fillColor: [41, 128, 185] }
               });
 
-              const nomeArquivo = `${tituloBase.toLowerCase().replace(/ /g, '-')}-${equipe}${filtros.status ? '-' + (document.getElementById(`filtroStatus${num}`).value || 'todos') : ''}${filtros.quadrimestre ? '-' + (document.getElementById(`filtroQuadrimestre${num}`).value || 'todos') : ''}${filtros.prioridade ? '-' + (document.getElementById(`filtroPrioridade${num}`).value || 'todas') : ''}${filtros.boaspraticas ? '-' + (document.getElementById(`filtroBoasPraticas${num}`).value || 'todas') : ''}.pdf`;
-              doc.save(nomeArquivo);
+              const sufixos = [];
+              if (filtros.status) sufixos.push(document.getElementById(filtroIds.status).value || 'todos');
+              if (filtros.quadrimestre) sufixos.push(document.getElementById(filtroIds.quadrimestre).value || 'todos');
+              if (filtros.prioridade) sufixos.push(document.getElementById(filtroIds.prioridade).value || 'todas');
+              if (filtros.boaspraticas) sufixos.push(document.getElementById(filtroIds.boaspraticas).value || 'todas');
+
+              doc.save(`${tituloBase.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '')}-${equipeVal}${sufixos.length > 0 ? '-' + sufixos.join('-') : ''}.pdf`);
             };
+          },
+          error: function () {
+            document.getElementById(`erroPdf${num}`).textContent = 'Erro ao carregar os dados.';
+            document.getElementById(`erroPdf${num}`).style.display = 'block';
           }
         });
       }
 
-      // Criar todas as tabelas
+      // === CHAMADAS CORRETAS (sem truques perigosos de ID) ===
       criarTabela(1, 4, 5, 14, { equipe: { idx: 1 }, status: { idx: 13 }, quadrimestre: { idx: 14 } });
       criarTabela(2, 4, 5, 12, { equipe: { idx: 1 }, status: { idx: 11 }, quadrimestre: { idx: 12 } });
       criarTabela(3, 4, 5, 18, { equipe: { idx: 1 } });
       criarTabela(4, 3, 4, 11, { equipe: { idx: 1 }, prioridade: { idx: 10 }, boaspraticas: { idx: 11 } });
-      criarTabela(5, 3, 4, 13, { equipe: { idx: 1 }, prioridade: { idx: 12 }, boaspraticas: { idx: 13 } });
+      criarTabela(5, 3, 4, 13, { equipe: { idx: 1 }, prioridade: { idx: 12 }, boaspraticas: { idx: 13 } });   
     });
   </script>
 </body>
