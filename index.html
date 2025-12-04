@@ -20,8 +20,8 @@
   <style>
     body {font-family: 'Segoe UI', sans-serif; margin:20px; background:#f7f9fc; color:#333;}
     h2 {text-align:center; color:#2c3e50; margin-bottom:20px;}
-    .tab-buttons {text-align:center; margin-bottom:20px; flex-wrap:wrap; gap:8px; display:flex; justify-content:center;}
-    .tab-button {padding:10px 16px; background:#007bff; color:#fff; border:none; border-radius:6px 6px 0 0; cursor:pointer; font-weight:600; font-size:14px;}
+    .tab-buttons {text-align:center; margin-bottom:20px; display:flex; flex-wrap:wrap; justify-content:center; gap:8px;}
+    .tab-button {padding:10px 18px; background:#007bff; color:#fff; border:none; border-radius:6px 6px 0 0; cursor:pointer; font-weight:600;}
     .tab-button:hover {background:#0056b3;}
     .tab-button.active {background:#0056b3;}
     .tab-content {display:none; background:#fff; padding:25px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
@@ -89,7 +89,7 @@
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe4" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea4" multiple></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade4" multiple></select></div>
-      <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas4" &.multiple></select></div>
+      <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas4" multiple></select></div>
       <button id="btnPdf4">Gerar PDF</button>
     </div>
     <table id="tabela4" class="display"><thead><tr id="cabecalho4"></tr></thead><tbody></tbody></table>
@@ -140,16 +140,18 @@
         download: true,
         skipEmptyLines: true,
         complete: function(res) {
-          const cabecalhosReais = res.data[headerRowIdx].slice(1, totalCols + 1);  // B até a última coluna
+          const cabecalhosReais = res.data[headerRowIdx].slice(1, totalCols + 1);
           const cabecalhosTabela = ['Nº', ...cabecalhosReais];
           document.getElementById(`cabecalho${num}`).innerHTML = cabecalhosTabela.map(h => `<th>${h||'Sem nome'}</th>`).join('');
 
           let dados = res.data.slice(dataStartIdx);
 
-          // Normalizar filtros
+          // Normalizar filtros (incluindo Boas Práticas)
           Object.keys(filtros).forEach(k => {
             const idx = filtros[k].idx;
-            dados.forEach(r => r[idx] = (r[idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
+            dados.forEach(r => {
+              r[idx] = (r[idx] || '').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+            });
           });
 
           const tbody = document.querySelector(`#tabela${num} tbody`);
@@ -157,7 +159,7 @@
           dados.forEach(row => {
             if (row.length >= totalCols + 1) {
               const tr = document.createElement('tr');
-              tr.innerHTML = '<td></td>' + Array.from({length: totalCols}, (_,i) => `<td>${row[i+1]||''}</td>`).join('');
+              tr.innerHTML = '<td></td>' + Array.from({length: totalCols}, (_, i) => `<td>${row[i+1] || ''}</td>`).join('');
               tbody.appendChild(tr);
             }
           });
@@ -166,7 +168,7 @@
             pageLength: 10,
             destroy: true,
             drawCallback: function() {
-              this.api().rows({page:'current'}).nodes().each((row,i) => {
+              this.api().rows({page: 'current'}).nodes().each((row, i) => {
                 $(row).find('td:first').text(i + 1 + this.api().page.info().start);
               });
             }
@@ -182,34 +184,46 @@
             boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
           };
 
-          // Preencher Select2
-          const todosFiltros = { ...filtros, microarea: {idx:2} };
-          Object.keys(todosFiltros).forEach(k => {
-            const id = ids[k];
-            if (id) {
-              const valores = [...new Set(dados.map(r => r[todosFiltros[k].idx]).filter(Boolean))].sort();
-              $(`#${id}`).empty().append(valores.map(v => `<option value="${v}">${v}</option>`));
-              $(`#${id}`).select2({ placeholder: k==='microarea'?'Todas as microáreas':'Todas', allowClear:true });
+          // Preencher todos os filtros (incluindo Boas Práticas)
+          const todosFiltros = { ...filtros, microarea: { idx: 2 } };
+          Object.keys(todosFiltros).forEach(chave => {
+            const id = ids[chave];
+            if (id && document.getElementById(id)) {
+              const valores = [...new Set(dados.map(r => r[todosFiltros[chave].idx]).filter(Boolean))].sort();
+              const $select = $(`#${id}`).empty();
+              valores.forEach(v => $select.append(`<option value="${v}">${v}</option>`));
+              $select.select2({
+                placeholder: chave === 'microarea' ? 'Todas as microáreas' : 'Todas',
+                allowClear: true,
+                width: '100%'
+              });
             }
           });
 
-          // Aplicar filtros
-          [{el:`#${ids.equipe}`,col:1}, {el:`#${ids.microarea}`,col:2},
-           ...(filtros.status?[ {el:`#${ids.status}`,col:filtros.status.idx}]:[]),
-           ...(filtros.quadrimestre?[ {el:`#${ids.quadrimestre}`,col:filtros.quadrimestre.idx}]:[]),
-           ...(filtros.prioridade?[ {el:`#${ids.prioridade}`,col:filtros.prioridade.idx}]:[]),
-           ...(filtros.boaspraticas?[ {el:`#${ids.boaspraticas}`,col:filtros.boaspraticas.idx}]:[])
-          ].forEach(f => $(f.el).on('change', function() {
-            const vals = $(this).val()||[];
-            const regex = vals.length ? '^('+vals.map(v=>v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')$' : '';
-            tabela.column(f.col).search(regex, true, false).draw();
-          }));
+          // Aplicar filtros (agora 100% funcional)
+          const eventos = [
+            { el: `#${ids.equipe}`, col: 1 },
+            { el: `#${ids.microarea}`, col: 2 },
+            ...(filtros.status ? [{ el: `#${ids.status}`, col: filtros.status.idx }] : []),
+            ...(filtros.quadrimestre ? [{ el: `#${ids.quadrimestre}`, col: filtros.quadrimestre.idx }] : []),
+            ...(filtros.prioridade ? [{ el: `#${ids.prioridade}`, col: filtros.prioridade.idx }] : []),
+            ...(filtros.boaspraticas ? [{ el: `#${ids.boaspraticas}`, col: filtros.boaspraticas.idx }] : [])
+          ];
 
-          // PDF – Comportamento exatamente como você queria
+          eventos.forEach(ev => {
+            if (ev.el && $(ev.el).length) {
+              $(ev.el).off('change').on('change', function() {
+                const vals = $(this).val() || [];
+                const regex = vals.length ? '^(' + vals.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
+                tabela.column(ev.col).search(regex, true, false).draw();
+              });
+            }
+          });
+
+          // PDF (comportamento original: remove Equipe/Microárea se filtrada)
           document.getElementById(`btnPdf${num}`).onclick = function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
-
             const equipeSel = $(`#${ids.equipe}`).val() || [];
             const microSel  = $(`#${ids.microarea}`).val() || [];
 
@@ -217,24 +231,23 @@
             let titulo = titulos[num];
             if (equipeSel.length) titulo += ` - Equipe ${equipeSel.join(', ')}`;
             if (microSel.length)  titulo += ` - Microárea ${microSel.join(', ')}`;
-            doc.text(titulo.length > 100 ? titulo.substr(0,97)+'...' : titulo, 14, 20);
+            doc.text(titulo.length > 100 ? titulo.substring(0,97)+'...' : titulo, 14, 20);
 
             const rows = tabela.rows({search:'applied'}).data().toArray();
             if (!rows.length) return alert('Nenhum dado para gerar PDF');
 
-            // Cabeçalho do PDF: remove Equipe e/ou Microárea só se estiverem filtradas
             let head = ['Nº'];
-            let startCol = 1;
-            if (equipeSel.length === 0) { head.push(cabecalhosReais[0]); startCol = 1; } else startCol = 2;
-            if (microSel.length  === 0) head.push(cabecalhosReais[1]);
-            head.push(...cabecalhosReais.slice(microSel.length === 0 ? 2 : 1));
+            let startIdx = 1;
+            if (equipeSel.length === 0) { head.push(cabecalhosReais[0]); startIdx = 1; } else startIdx = 2;
+            if (microSel.length === 0) head.push(cabecalhosReais[1]);
+            head = head.concat(cabecalhosReais.slice(microSel.length === 0 ? 2 : 1));
 
             const body = rows.map((r,i) => {
               const linha = [(i+1).toString()];
-              let col = startCol;
-              if (equipeSel.length === 0) { linha.push(r[1]); col = 2; }
-              if (microSel.length  === 0) linha.push(r[2]);
-              for (let j = (microSel.length === 0 ? 3 : 2); j < r.length; j++) linha.push(r[j] || '');
+              let j = startIdx;
+              if (equipeSel.length === 0) linha.push(r[1]);
+              if (microSel.length === 0) linha.push(r[2]);
+              for (; j < r.length; j++) linha.push(r[j] || '');
               return linha;
             });
 
