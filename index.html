@@ -60,6 +60,7 @@
     <button class="tab-button" onclick="openTab('tab3')">Gestação e Puerpério</button>
     <button class="tab-button" onclick="openTab('tab4')">Hipertensão</button>
     <button class="tab-button" onclick="openTab('tab5')">Diabetes</button>
+    <button class="tab-button" onclick="openTab('tab6')">Saúde da Mulher</button>
   </div>
 
   <!-- Aba 1 -->
@@ -125,6 +126,18 @@
     <table id="tabela5" class="display"><thead><tr id="cabecalho5"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 6 - Saúde da Mulher -->
+  <div id="tab5" class="tab-content">
+    <div class="filtros">
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe6" multiple placeholder="Todas"></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea6" multiple placeholder="Todas"></select></div>
+      <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas6" multiple placeholder="Todas"></select></div>
+      <button id="btnPdf6">Gerar PDF</button>
+    </div>
+    <div id="erroPdf6" class="erro"></div>
+    <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
+  </div>
+
   <script>
     function openTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -139,7 +152,8 @@
         2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1899832726&single=true&output=csv",
         3: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA7ZEnYITSAdJO8T5LvvnDewjPeqMT57kDv_oSeuFUUznKI3FQ5pGg2Ic34k4ZShbWtONP-dvJOABQ/pub?gid=1768767677&single=true&output=csv",
         4: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9k_e_-jlJbu3GvtHBhvCfuUbuC7l85MV_jjZRnbsd3lIqmoKF2pLhGl1JnSfziVXze5zkGCXdPb2n/pub?output=csv",
-        5: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbfV1Kc6st6COoy-FxrbfnC_Ac3bxobCVY_-HXj0oyXNnVo7uVld2VVJh7gAhXAPGHXlZGutzjivjP/pub?gid=1534038569&single=true&output=csv"
+        5: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbfV1Kc6st6COoy-FxrbfnC_Ac3bxobCVY_-HXj0oyXNnVo7uVld2VVJh7gAhXAPGHXlZGutzjivjP/pub?gid=1534038569&single=true&output=csv",
+        6: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLX3B-1FNtn9BZVDseNGuRiPtUUtm13TTx_vI-quwscEMMsTVCp-NjL7b9YH4Cr4vgSI6jAH52M8mk/pub?gid=1711913800&single=true&output=csv"
       };
 
       function criarTabela(num, headerRowIdx, dataStartIdx, colunasFim, filtros = {}) {
@@ -236,7 +250,7 @@
 
               const equipeSel = $(`#${ids.equipe}`).val() || [];
               const microSel = $(`#${ids.microarea}`).val() || [];
-              const tituloBase = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes'][num]
+              const tituloBase = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes', 'Saúde da Mulher'][num]
 
               let titulo = tituloBase;
               if (equipeSel.length > 0) titulo += ` - Equipe ${equipeSel.join(', ')}`;
@@ -269,6 +283,7 @@
       criarTabela(3, 4, 5, 17, {equipe:{idx:1}});
       criarTabela(4, 3, 4, 11, {equipe:{idx:1}, prioridade:{idx:10}, boaspraticas:{idx:11}});
       criarTabela(5, 3, 4, 13, {equipe:{idx:1}, prioridade:{idx:12}, boaspraticas:{idx:13}});
+      criarTabela(6, 3, 4, 10, {equipe:{idx:1}, boaspraticas:{idx:10}});
     });
   </script>
 </body>
