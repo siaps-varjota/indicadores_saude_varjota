@@ -186,7 +186,7 @@
             // IDs dos filtros
             const ids = {
               equipe:       num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
-              microarea:   num >= 14 ? `filtroMicroarea${num}` : null,
+              microarea:   filtroMicroarea${num === 1 ? 1 : num}`,
               status:       num <= 2 ? `filtroStatus${num}` : null,
               quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
               prioridade:   num >= 4 ? `filtroPrioridade${num}` : null,
