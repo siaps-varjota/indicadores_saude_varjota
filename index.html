@@ -5,38 +5,50 @@
   <title>Indicadores de Saúde de Varjota</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
+  <!-- jQuery + DataTables -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  
+  <!-- PapaParse -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  
+  <!-- jsPDF + autoTable -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.25/dist/jspdf.plugin.autotable.min.js"></script>
   
+  <!-- Select2 -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   
   <style>
     body {font-family: 'Segoe UI', sans-serif; margin:20px; background:#f7f9fc; color:#333;}
     h2 {text-align:center; color:#2c3e50; margin-bottom:20px;}
-    .tab-buttons {text-align:center; margin-bottom:20px; display:flex; flex-wrap:wrap; justify-content:center; gap:8px;}
-    .tab-button {padding:12px 18px; background:#007bff; color:#fff; border:none; border-radius:6px 6px 0 0; cursor:pointer; font-weight:600;}
+    .tab-buttons {text-align:center; margin-bottom:20px;}
+    .tab-button {
+      padding:12px 20px; background:#007bff; color:#fff; border:none;
+      border-radius:6px 6px 0 0; cursor:pointer; margin:0 4px; font-weight:600;
+    }
     .tab-button:hover {background:#0056b3;}
-    .tab-button.active {background:#0056b3; top:1px; position:relative;}
+    .tab-button.active {background:#0056b3;}
     .tab-content {display:none; background:#fff; padding:25px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
     .tab-content.active {display:block;}
     .filtros {margin-bottom:20px; display:flex; flex-wrap:wrap; gap:15px; align-items:end;}
-    .filtro-group {min-width:240px;}
-    .filtro-group label {display:block; margin-bottom:6px; font-weight:600; color:#495057;}
-    .select2-container--default .select2-selection--multiple {
-      border:1px solid #ced4da; border-radius:6px; min-height:40px; padding:4px 8px;
-    }
+    .filtro-group {min-width:220px;}
+    .filtro-group label {display:block; margin-bottom:5px; font-weight:600; color:#495057;}
     .select2-container {width:100% !important;}
-    .filtros button {padding:10px 24px; background:#28a745; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;}
+    .select2-container--default .select2-selection--multiple {
+      border:1px solid #ced4da; border-radius:6px; min-height:38px; padding:4px;
+    }
+    .filtros button {
+      padding:10px 20px; background:#28a745; color:#fff; border:none;
+      border-radius:6px; cursor:pointer; font-weight:600;
+    }
     .filtros button:hover {background:#218838;}
     .erro {color:#dc3545; font-weight:bold; margin-top:10px; display:none;}
-    table {font-size:13px; width:100%; margin-top:10px;}
+    table {font-size:13px; width:100%;}
     th {background:#007bff; color:#fff;}
-    td, th {text-align:center; padding:8px;}
+    td, th {text-align:center; padding:6px;}
   </style>
 </head>
 <body>
@@ -48,26 +60,26 @@
     <button class="tab-button" onclick="openTab('tab3')">Gestação e Puerpério</button>
     <button class="tab-button" onclick="openTab('tab4')">Hipertensão</button>
     <button class="tab-button" onclick="openTab('tab5')">Diabetes</button>
-    <button class="tab-button" onclick="openTab('tab6')">Saúde da Mulher</button>
   </div>
 
-  <!-- Abas 1 a 6 (todas com mesmo padrão) -->
+  <!-- Aba 1 -->
   <div id="tab1" class="tab-content active">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe" multiple placeholder="Todas as equipes"></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea1" multiple placeholder="Selecione equipe(s) primeiro"></select></div>
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe" multiple placeholder="Todas"></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea1" multiple placeholder="Todas"></select></div>
       <div class="filtro-group"><label>Status</label><select id="filtroStatus1" multiple placeholder="Todos"></select></div>
       <div class="filtro-group"><label>Quadrimestre</label><select id="filtroQuadrimestre1" multiple placeholder="Todos"></select></div>
       <button id="btnPdf1">Gerar PDF</button>
     </div>
-    <div id="erroPdf1" class="erro"></div>
+    <div id="erroPdf" class="erro"></div>
     <table id="tabela1" class="display"><thead><tr id="cabecalho1"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe2" multiple placeholder="Todas as equipes"></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea2" multiple placeholder="Selecione equipe(s) primeiro"></select></div>
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe2" multiple placeholder="Todas"></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea2" multiple placeholder="Todas"></select></div>
       <div class="filtro-group"><label>Status</label><select id="filtroStatus2" multiple placeholder="Todos"></select></div>
       <div class="filtro-group"><label>Quadrimestre</label><select id="filtroQuadrimestre2" multiple placeholder="Todos"></select></div>
       <button id="btnPdf2">Gerar PDF</button>
@@ -76,20 +88,22 @@
     <table id="tabela2" class="display"><thead><tr id="cabecalho2"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 3 -->
   <div id="tab3" class="tab-content">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe3" multiple placeholder="Todas as equipes"></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea3" multiple placeholder="Selecione equipe(s) primeiro"></select></div>
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe3" multiple placeholder="Todas"></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea3" multiple placeholder="Todas"></select></div>
       <button id="btnPdf3">Gerar PDF</button>
     </div>
     <div id="erroPdf3" class="erro"></div>
     <table id="tabela3" class="display"><thead><tr id="cabecalho3"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 4 - Hipertensão -->
   <div id="tab4" class="tab-content">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe4" multiple placeholder="Todas as equipes"></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea4" multiple placeholder="Selecione equipe(s) primeiro"></select></div>
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe4" multiple placeholder="Todas"></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea4" multiple placeholder="Todas"></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade4" multiple placeholder="Todas"></select></div>
       <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas4" multiple placeholder="Todas"></select></div>
       <button id="btnPdf4">Gerar PDF</button>
@@ -98,27 +112,17 @@
     <table id="tabela4" class="display"><thead><tr id="cabecalho4"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 5 - Diabetes -->
   <div id="tab5" class="tab-content">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe5" multiple placeholder="Todas as equipes"></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea5" multiple placeholder="Selecione equipe(s) primeiro"></select></div>
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe5" multiple placeholder="Todas"></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea5" multiple placeholder="Todas"></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade5" multiple placeholder="Todas"></select></div>
       <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas5" multiple placeholder="Todas"></select></div>
       <button id="btnPdf5">Gerar PDF</button>
     </div>
     <div id="erroPdf5" class="erro"></div>
     <table id="tabela5" class="display"><thead><tr id="cabecalho5"></tr></thead><tbody></tbody></table>
-  </div>
-
-  <div id="tab6" class="tab-content">
-    <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe6" multiple placeholder="Todas as equipes"></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea6" multiple placeholder="Selecione equipe(s) primeiro"></select></div>
-      <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas6" multiple placeholder="Todas"></select></div>
-      <button id="btnPdf6">Gerar PDF</button>
-    </div>
-    <div id="erroPdf6" class="erro"></div>
-    <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
   </div>
 
   <script>
@@ -135,23 +139,30 @@
         2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1899832726&single=true&output=csv",
         3: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA7ZEnYITSAdJO8T5LvvnDewjPeqMT57kDv_oSeuFUUznKI3FQ5pGg2Ic34k4ZShbWtONP-dvJOABQ/pub?gid=1768767677&single=true&output=csv",
         4: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9k_e_-jlJbu3GvtHBhvCfuUbuC7l85MV_jjZRnbsd3lIqmoKF2pLhGl1JnSfziVXze5zkGCXdPb2n/pub?output=csv",
-        5: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbfV1Kc6st6COoy-FxrbfnC_Ac3bxobCVY_-HXj0oyXNnVo7uVld2VVJh7gAhXAPGHXlZGutzjivjP/pub?gid=1534038569&single=true&output=csv",
-        6: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLX3B-1FNtn9BZVDseNGuRiPtUUtm13TTx_vI-quwscEMMsTVCp-NjL7b9YH4Cr4vgSI6jAH52M8mk/pub?gid=1711913800&single=true&output=csv"
+        5: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbfV1Kc6st6COoy-FxrbfnC_Ac3bxobCVY_-HXj0oyXNnVo7uVld2VVJh7gAhXAPGHXlZGutzjivjP/pub?gid=1534038569&single=true&output=csv"
       };
 
-      function criarTabela(num, headerRowIdx, dataStartIdx, colunasFim, filtrosExtras = {}) {
+      function criarTabela(num, headerRowIdx, dataStartIdx, colunasFim, filtros = {}) {
         Papa.parse(urls[num] + "&t=" + Date.now(), {
           download: true,
           skipEmptyLines: true,
           complete: function (res) {
-            const dados = res.data.slice(dataStartIdx).map(r => {
-              r[1] = (r[1] || '').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-              r[2] = (r[2] || '').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-              return r;
+            const cabecalhoGlobal = ['Nº', ...res.data[headerRowIdx].slice(1, colunasFim + 1)];
+            let dados = res.data.slice(dataStartIdx);
+
+            // Normalizar todas as colunas de filtro (incluindo microárea na coluna C → índice 2)
+            Object.keys(filtros).forEach(k => {
+              const idx = filtros[k].idx;
+              dados = dados.map(r => {
+                r[idx] = (r[idx] || '').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                return r;
+              });
             });
 
-            // Montar tabela
-            document.getElementById(`cabecalho${num}`).innerHTML = res.data[headerRowIdx].slice(1, colunasFim + 1).map(h => `<th>${h || ''}</th>`).join('');
+            // Cabeçalho
+            document.getElementById(`cabecalho${num}`).innerHTML = cabecalhoGlobal.map(h => `<th>${h || 'Sem Nome'}</th>`).join('');
+
+            // Corpo
             const tbody = document.querySelector(`#tabela${num} tbody`);
             tbody.innerHTML = '';
             dados.forEach(row => {
@@ -163,7 +174,7 @@
             });
 
             const tabela = $(`#tabela${num}`).DataTable({
-              pageLength: 15,
+              pageLength: 10,
               destroy: true,
               drawCallback: function () {
                 this.api().rows({page: 'current'}).nodes().each((row, i) => {
@@ -172,109 +183,92 @@
               }
             });
 
+            // IDs dos filtros
             const ids = {
-              equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
-              microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
+              equipe:       num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
+              microarea:    `filtroMicroarea${num === 1 ? 1 : num}`,
+              status:       num <= 2 ? `filtroStatus${num}` : null,
+              quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
+              prioridade:   num >= 4 ? `filtroPrioridade${num}` : null,
               boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
             };
 
-            // Atualizar microáreas (agora com Select2 bonito!)
-            function atualizarMicroareas() {
-              const eqSel = $(`#${ids.equipe}`).val() || [];
-              const microFiltradas = eqSel.length === 0
-                ? [...new Set(dados.map(r => r[2]).filter(Boolean))]
-                : [...new Set(dados.filter(r => eqSel.includes(r[1])).map(r => r[2]).filter(Boolean))];
-
-              const $micro = $(`#${ids.microarea}`);
-              $micro.empty().append('<option></option>');
-              microFiltradas.sort().forEach(m => $micro.append(`<option value="${m}">${m}</option>`));
-
-              // Inicializa ou reinicializa o Select2 corretamente
-              if ($micro.hasClass('select2-hidden-accessible')) $micro.select2('destroy');
-              $micro.select2({
-                placeholder: eqSel.length ? "Filtrar microáreas" : "Todas as microáreas",
-                allowClear: true,
-                width: '100%'
-              });
-            }
-
-            // Inicializar Select2 para Equipe
-            const equipes = [...new Set(dados.map(r => r[1]).filter(Boolean))].sort();
-            const $eq = $(`#${ids.equipe}`).empty().append('<option></option>');
-            equipes.forEach(e => $eq.append(`<option value="${e}">${e}</option>`));
-            $eq.select2({ placeholder: "Todas as equipes", allowClear: true })
-               .on('change', () => {
-                 tabela.column(1).search('').draw();
-                 atualizarMicroareas();
-               });
-
-            // Boas Práticas (se existir)
-            if (ids.boaspraticas) {
-              const idxBP = filtrosExtras.boaspraticas?.idx || 10;
-              const bpVals = [...new Set(dados.map(r => r[idxBP]).filter(Boolean))].sort();
-              const $bp = $(`#${ids.boaspraticas}`).empty().append('<option></option>');
-              bpVals.forEach(v => $bp.append(`<option value="${v}">${v}</option>`));
-              $bp.select2({ placeholder: "Todas", allowClear: true });
-            }
-
-            // Inicializa microáreas
-            atualizarMicroareas();
-
-            // Aplicar filtros
-            function aplicarFiltros() {
-              const eq = $(`#${ids.equipe}`).val() || [];
-              const mc = $(`#${ids.microarea}`).val() || [];
-              const bp = ids.boaspraticas ? $(`#${ids.boaspraticas}`).val() || [] : [];
-
-              tabela.column(1).search(eq.length ? '^(' + eq.join('|') + ')$' : '', true, false);
-              tabela.column(2).search(mc.length ? '^(' + mc.join('|') + ')$' : '', true, false);
-              if (bp.length && ids.boaspraticas) {
-                tabela.column(filtrosExtras.boaspraticas.idx).search('^(' + bp.join('|') + ')$', true, false);
+            // Inicializar Select2 para todos os filtros (incluindo microárea)
+            const todosFiltros = { ...filtros, microarea: { idx: 2 } }; // coluna C = microárea
+            Object.keys(todosFiltros).forEach(key => {
+              const id = ids[key];
+              if (id) {
+                const valores = [...new Set(dados.map(r => r[todosFiltros[key].idx]).filter(Boolean))].sort();
+                const $select = $(`#${id}`).empty();
+                valores.forEach(v => $select.append(`<option value="${v}">${v}</option>`));
+                $select.select2({
+                  placeholder: key === 'microarea' ? "Todas as microáreas" : "Todas",
+                  allowClear: true,
+                  width: '100%'
+                });
               }
-              tabela.draw();
-            }
+            });
 
-            $(document).on('change', `#${ids.equipe}, #${ids.microarea}, #${ids.boaspraticas || ''}`, aplicarFiltros);
+            // Aplicar filtros múltiplos
+            const eventos = [
+              { el: `#${ids.equipe}`, col: 1 },
+              { el: `#${ids.microarea}`, col: 2 },
+              ...(filtros.status ? [{ el: `#${ids.status}`, col: filtros.status.idx }] : []),
+              ...(filtros.quadrimestre ? [{ el: `#${ids.quadrimestre}`, col: filtros.quadrimestre.idx }] : []),
+              ...(filtros.prioridade ? [{ el: `#${ids.prioridade}`, col: filtros.prioridade.idx }] : []),
+              ...(filtros.boaspraticas ? [{ el: `#${ids.boaspraticas}`, col: filtros.boaspraticas.idx }] : [])
+            ];
 
-            // PDF (funcionando perfeitamente)
+            eventos.forEach(ev => {
+              $(ev.el).on('change', function () {
+                const vals = $(this).val() || [];
+                const regex = vals.length ? '^(' + vals.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
+                tabela.column(ev.col).search(regex, true, false).draw();
+              });
+            });
+
+            // PDF
             document.getElementById(`btnPdf${num}`).onclick = function () {
+              if (typeof window.jspdf === 'undefined') return alert('jsPDF não carregou');
+
               const { jsPDF } = window.jspdf;
               const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
-              const eqSel = $(`#${ids.equipe}`).val() || [];
-              const mcSel = $(`#${ids.microarea}`).val() || [];
-              const titulo = num === 6 ? "Saúde da Mulher" : `Indicador ${num}`;
-              let subtitulo = eqSel.length ? eqSel.join(', ') : '';
-              if (mcSel.length) subtitulo += (subtitulo ? ' - ' : '') + 'Microárea ' + mcSel.join(', ');
-              doc.text(subtitulo ? `${titulo} - ${subtitulo}` : titulo, 14, 20);
+
+              const equipeSel = $(`#${ids.equipe}`).val() || [];
+              const microSel = $(`#${ids.microarea}`).val() || [];
+              const tituloBase = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes'][num]
+
+              let titulo = tituloBase;
+              if (equipeSel.length > 0) titulo += ` - Equipe ${equipeSel.join(', ')}`;
+              if (microSel.length > 0) titulo += ` - Microárea ${microSel.join(', ')}`;
+
+              doc.text(titulo.length > 80 ? titulo.substring(0,77) + '...' : titulo, 14, 20);
 
               const rows = tabela.rows({search:'applied'}).data().toArray();
-              if (!rows.length) return alert('Nenhum dado');
+              if (rows.length === 0) return alert('Nenhum dado para gerar PDF');
 
-              const head = (eqSel.length === 0 && mcSel.length === 0)
-                ? ['Nº', ...res.data[headerRowIdx].slice(1, colunasFim + 1)]
-                : ['Nº', ...(eqSel.length === 0 ? ['Equipe'] : []), ...(mcSel.length === 0 ? ['Microárea'] : []), ...res.data[headerRowIdx].slice(3, colunasFim + 1)];
-
+              const head = (equipeSel.length === 0 && microSel.length === 0) ? cabecalhoGlobal : ['Nº', ...cabecalhoGlobal.slice(microSel.length === 0 ? 2 : 3)];
               const body = rows.map((r, i) => {
-                const linha = [(i+1)+''];
-                if (eqSel.length === 0) linha.push(r[1]);
-                if (mcSel.length === 0) linha.push(r[2]);
-                for (let j = 3; j < r.length; j++) linha.push(r[j] || '');
+                const linha = [(i+1).toString()];
+                if (equipeSel.length === 0) linha.push(r[1]);
+                if (microSel.length === 0) linha.push(r[2]);
+                for (let j = microSel.length === 0 ? 3 : 2; j < r.length; j++) linha.push(r[j] || '');
                 return linha;
               });
 
               doc.autoTable({head: [head], body, startY: 30, theme: 'striped', styles: {fontSize:7, halign:'center'}});
-              doc.save(`${titulo.toLowerCase().replace(/ /g,'-')}-${eqSel.join('-') || 'todas'}-${mcSel.join('-') || 'todas'}.pdf`);
+              doc.save(`${tituloBase.toLowerCase().replace(/[^a-z0-9]/g,'-')}-${equipeSel.join('-') || 'todas'}-${microSel.join('-') || 'todas'}.pdf`);
             };
           }
         });
       }
 
-      criarTabela(1, 4, 5, 14, {status: {idx:13}, quadrimestre: {idx:14}});
-      criarTabela(2, 4, 5, 12, {status: {idx:11}, quadrimestre: {idx:12}});
-      criarTabela(3, 4, 5, 18, {});
-      criarTabela(4, 3, 4, 11, {prioridade: {idx:10}, boaspraticas: {idx:11}});
-      criarTabela(5, 3, 4, 13, {prioridade: {idx:12}, boaspraticas: {idx:13}});
-      criarTabela(6, 3, 4, 10, {boaspraticas: {idx:10}});
+      // Criar todas as tabelas com filtro por microárea
+      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:13}, quadrimestre:{idx:14}});
+      criarTabela(2, 4, 5, 12, {equipe:{idx:1}, status:{idx:11}, quadrimestre:{idx:12}});
+      criarTabela(3, 4, 5, 18, {equipe:{idx:1}});
+      criarTabela(4, 3, 4, 11, {equipe:{idx:1}, prioridade:{idx:10}, boaspraticas:{idx:11}});
+      criarTabela(5, 3, 4, 13, {equipe:{idx:1}, prioridade:{idx:12}, boaspraticas:{idx:13}});
     });
   </script>
 </body>
