@@ -146,7 +146,7 @@
 
           let dados = res.data.slice(dataStartIdx);
 
-          // Normalizar colunas de filtro
+          // Normalizar filtros
           Object.keys(filtros).forEach(k => {
             const idx = filtros[k].idx;
             dados.forEach(r => r[idx] = (r[idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
@@ -172,6 +172,7 @@
             }
           });
 
+          // IDs dos filtros
           const ids = {
             equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
             microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
@@ -181,21 +182,22 @@
             boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
           };
 
-          // Preencher filtros
+          // Preencher todos os selects
           const todosFiltros = { ...filtros, microarea: {idx:2} };
           Object.keys(todosFiltros).forEach(chave => {
             const id = ids[chave];
             if (id && document.getElementById(id)) {
               const valores = [...new Set(dados.map(r => r[todosFiltros[chave].idx]).filter(Boolean))].sort();
-              $(`#${id}`).empty().append(valores.map(v => `<option value="${v}">${v}</option>`));
-              $(`#${id}`).select2({
-                placeholder: chave==='microarea' ? 'Todas as microáreas' : 'Todas',
+              const $select = $(`#${id}`).empty();
+              valores.forEach(v => $select.append(`<option value="${v}">${v}</option>`));
+              $select.select2({
+                placeholder: chave === 'microarea' ? 'Todas as microáreas' : 'Todas',
                 allowClear: true
               });
             }
           });
 
-          // Aplicar filtros
+          // Aplicar filtros (agora com .off() para evitar duplicação)
           [
             {el: `#${ids.equipe}`, col: 1},
             {el: `#${ids.microarea}`, col: 2},
@@ -204,14 +206,14 @@
             ...(filtros.prioridade ? [{el: `#${ids.prioridade}`, col: filtros.prioridade.idx}] : []),
             ...(filtros.boaspraticas ? [{el: `#${ids.boaspraticas}`, col: filtros.boaspraticas.idx}] : [])
           ].forEach(f => {
-            $(f.el).off('change').on('change', function() {
+            $(f.el).off('change.filter').on('change.filter', function() {
               const vals = $(this).val() || [];
               const regex = vals.length ? '^(' + vals.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
               tabela.column(f.col).search(regex, true, false).draw();
             });
           });
 
-          // GERAR PDF - CORRIGIDO E PERFEITO
+          // PDF PERFEITO — sem duplicar colunas
           document.getElementById(`btnPdf${num}`).onclick = function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
@@ -228,24 +230,20 @@
             const rows = tabela.rows({search:'applied'}).data().toArray();
             if (!rows.length) return alert('Nenhum dado para gerar o PDF');
 
-            // Cabeçalho do PDF
             const head = ['Nº'];
             const incluirEquipe = equipeSel.length === 0;
-            const incluirMicro = microSel.length === 0;
+            const incluirMicro  = microSel.length === 0;
 
-            if (incluirEquipe) head.push(cabecalhosReais[0]);  // Equipe
-            if (incluirMicro)  head.push(cabecalhosReais[1]);  // Microárea
-            head.push(...cabecalhosReais.slice(2)); // resto das colunas
+            if (incluirEquipe) head.push(cabecalhosReais[0]);
+            if (incluirMicro)  head.push(cabecalhosReais[1]);
+            head.push(...cabecalhosReais.slice(2));
 
-            // Corpo do PDF
             const body = rows.map((r, i) => {
               const linha = [(i+1).toString()];
               let col = 1;
               if (incluirEquipe) { linha.push(r[1]); col = 2; }
               if (incluirMicro)  { linha.push(r[2]); col = 3; }
-              for (; col < r.length; col++) {
-                linha.push(r[col] || '');
-              }
+              for (; col < r.length; col++) linha.push(r[col] || '');
               return linha;
             });
 
@@ -265,7 +263,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:13}, quadrimestre:{idx:14}});
+      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:12}, quadrimestre:{idx:14}});
       criarTabela(2, 4, 5, 12, {equipe:{idx:1}, status:{idx:11}, quadrimestre:{idx:12}});
       criarTabela(3, 4, 5, 18, {equipe:{idx:1}});
       criarTabela(4, 3, 4, 11, {equipe:{idx:1}, prioridade:{idx:10}, boaspraticas:{idx:11}});
