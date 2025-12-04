@@ -49,7 +49,7 @@
     <button class="tab-button" onclick="openTab('tab6')">Saúde da Mulher</button>
   </div>
 
-  <!-- Aba 1 -->
+  <!-- Abas (HTML igual ao anterior, só corrigi o PDF) -->
   <div id="tab1" class="tab-content active">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe" multiple></select></div>
@@ -61,10 +61,9 @@
     <table id="tabela1" class="display"><thead><tr id="cabecalho1"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe2" multiple></select></div>
+      <div class="filtro-group"><label>Equipe</label><select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea2" multiple></select></div>
       <div class="filtro-group"><label>Status</label><select id="filtroStatus2" multiple></select></div>
       <div class="filtro-group"><label>Quadrimestre</label><select id="filtroQuadrimestre2" multiple></select></div>
@@ -73,7 +72,6 @@
     <table id="tabela2" class="display"><thead><tr id="cabecalho2"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 3 -->
   <div id="tab3" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe3" multiple></select></div>
@@ -83,7 +81,6 @@
     <table id="tabela3" class="display"><thead><tr id="cabecalho3"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 4 - Hipertensão -->
   <div id="tab4" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe4" multiple></select></div>
@@ -95,11 +92,10 @@
     <table id="tabela4" class="display"><thead><tr id="cabecalho4"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 5 - Diabetes -->
   <div id="tab5" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe5" multiple></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea5" multiple></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea5" multiple></select></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade5" multiple></select></div>
       <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas5" multiple></select></div>
       <button id="btnPdf5">Gerar PDF</button>
@@ -107,7 +103,6 @@
     <table id="tabela5" class="display"><thead><tr id="cabecalho5"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 6 - Saúde da Mulher -->
   <div id="tab6" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe6" multiple></select></div>
@@ -146,7 +141,6 @@
 
           let dados = res.data.slice(dataStartIdx);
 
-          // Normalizar filtros
           Object.keys(filtros).forEach(k => {
             const idx = filtros[k].idx;
             dados.forEach(r => r[idx] = (r[idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
@@ -172,7 +166,6 @@
             }
           });
 
-          // IDs dos filtros
           const ids = {
             equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
             microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
@@ -182,7 +175,6 @@
             boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
           };
 
-          // Preencher todos os selects
           const todosFiltros = { ...filtros, microarea: {idx:2} };
           Object.keys(todosFiltros).forEach(chave => {
             const id = ids[chave];
@@ -197,7 +189,6 @@
             }
           });
 
-          // Aplicar filtros (agora com .off() para evitar duplicação)
           [
             {el: `#${ids.equipe}`, col: 1},
             {el: `#${ids.microarea}`, col: 2},
@@ -213,37 +204,32 @@
             });
           });
 
-          // PDF PERFEITO — sem duplicar colunas
+          // PDF: SEMPRE REMOVE A COLUNA EQUIPE, SEMPRE MANDA MICROÁREA
           document.getElementById(`btnPdf${num}`).onclick = function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
 
-            const equipeSel = $(`#${ids.equipe}`).val() || [];
-            const microSel  = $(`#${ids.microarea}`).val() || [];
+            const microSel = $(`#${ids.microarea}`).val() || [];
 
             const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
             let titulo = titulos[num];
-            if (equipeSel.length) titulo += ` - Equipe ${equipeSel.join(', ')}`;
-            if (microSel.length)  titulo += ` - Microárea ${microSel.join(', ')}`;
+            if (microSel.length) titulo += ` - Microárea ${microSel.join(', ')}`;
             doc.text(titulo.length > 100 ? titulo.substring(0,97)+'...' : titulo, 14, 20);
 
             const rows = tabela.rows({search:'applied'}).data().toArray();
             if (!rows.length) return alert('Nenhum dado para gerar o PDF');
 
-            const head = ['Nº'];
-            const incluirEquipe = equipeSel.length === 0;
-            const incluirMicro  = microSel.length === 0;
+            // Cabeçalho do PDF: SEMPRE pula a coluna Equipe (índice 1)
+            const head = ['Nº', cabecalhosReais[1]]; // Nº + Microárea
+            head.push(...cabecalhosReais.slice(2));   // todas as outras colunas
 
-            if (incluirEquipe) head.push(cabecalhosReais[0]);
-            if (incluirMicro)  head.push(cabecalhosReais[1]);
-            head.push(...cabecalhosReais.slice(2));
-
+            // Corpo: pula a coluna 1 (Equipe)
             const body = rows.map((r, i) => {
               const linha = [(i+1).toString()];
-              let col = 1;
-              if (incluirEquipe) { linha.push(r[1]); col = 2; }
-              if (incluirMicro)  { linha.push(r[2]); col = 3; }
-              for (; col < r.length; col++) linha.push(r[col] || '');
+              linha.push(r[2]); // Microárea (sempre)
+              for (let j = 3; j < r.length; j++) {
+                linha.push(r[j] || '');
+              }
               return linha;
             });
 
@@ -252,18 +238,19 @@
               body: body,
               startY: 30,
               theme: 'striped',
-              styles: {fontSize: 7, halign: 'center'},
-              headStyles: {fillColor: [0, 123, 255]}
+              styles: {fontSize: 7.5, halign: 'center', cellPadding: 2},
+              headStyles: {fillColor: [0, 123, 255]},
+              columnStyles: { 0: {cellWidth: 12} } // ajusta largura da coluna Nº
             });
 
-            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}-${equipeSel.join('-')||'todas'}-${microSel.join('-')||'todas'}.pdf`);
+            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}-${microSel.join('-')||'todas'}.pdf`);
           };
         }
       });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:12}, quadrimestre:{idx:14}});
+      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:13}, quadrimestre:{idx:14}});
       criarTabela(2, 4, 5, 12, {equipe:{idx:1}, status:{idx:11}, quadrimestre:{idx:12}});
       criarTabela(3, 4, 5, 18, {equipe:{idx:1}});
       criarTabela(4, 3, 4, 11, {equipe:{idx:1}, prioridade:{idx:10}, boaspraticas:{idx:11}});
