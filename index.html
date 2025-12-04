@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.25/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -49,7 +49,7 @@
     <button class="tab-button" onclick="openTab('tab6')">Saúde da Mulher</button>
   </div>
 
-  <!-- Abas (HTML igual ao anterior, só corrigi o PDF) -->
+  <!-- Aba 1 -->
   <div id="tab1" class="tab-content active">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe" multiple></select></div>
@@ -61,9 +61,10 @@
     <table id="tabela1" class="display"><thead><tr id="cabecalho1"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select></div>
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe2" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea2" multiple></select></div>
       <div class="filtro-group"><label>Status</label><select id="filtroStatus2" multiple></select></div>
       <div class="filtro-group"><label>Quadrimestre</label><select id="filtroQuadrimestre2" multiple></select></div>
@@ -72,6 +73,7 @@
     <table id="tabela2" class="display"><thead><tr id="cabecalho2"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 3 a 6 (mantidas iguais) -->
   <div id="tab3" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe3" multiple></select></div>
@@ -95,7 +97,7 @@
   <div id="tab5" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe5" multiple></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea5" multiple></select></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea5" multiple></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade5" multiple></select></div>
       <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas5" multiple></select></div>
       <button id="btnPdf5">Gerar PDF</button>
@@ -141,9 +143,9 @@
 
           let dados = res.data.slice(dataStartIdx);
 
-          Object.keys(filtros).forEach(k => {
-            const idx = filtros[k].idx;
-            dados.forEach(r => r[idx] = (r[idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
+          // Normalizar colunas para filtro
+          Object.values(filtros).forEach(f => {
+            dados.forEach(r => r[f.idx] = (r[f.idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
           });
 
           const tbody = document.querySelector(`#tabela${num} tbody`);
@@ -166,71 +168,71 @@
             }
           });
 
+          // IDs corretos dos filtros
           const ids = {
             equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
             microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
             status: num <= 2 ? `filtroStatus${num}` : null,
             quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
-            prioridade: (num >= 4 && num <= 5) ? `filtroPrioridade${num}` : null,
-            boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
+            prioridade: (num ===4 || num===5) ? `filtroPrioridade${num}` : null,
+            boaspraticas: num >=4 ? `filtroBoasPraticas${num}` : null
           };
 
-          const todosFiltros = { ...filtros, microarea: {idx:2} };
-          Object.keys(todosFiltros).forEach(chave => {
-            const id = ids[chave];
+          // Preencher selects
+          const todosFiltros = { equipe: {idx:1}, microarea: {idx:2}, ...filtros };
+          Object.keys(todosFiltros).forEach(ch => {
+            const id = ids[ch];
             if (id && document.getElementById(id)) {
-              const valores = [...new Set(dados.map(r => r[todosFiltros[chave].idx]).filter(Boolean))].sort();
-              const $select = $(`#${id}`).empty();
-              valores.forEach(v => $select.append(`<option value="${v}">${v}</option>`));
-              $select.select2({
-                placeholder: chave === 'microarea' ? 'Todas as microáreas' : 'Todas',
-                allowClear: true
-              });
+              const valores = [...new Set(dados.map(r => r[todosFiltros[ch].idx]).filter(Boolean))].sort();
+              const $s = $(`#${id}`).empty();
+              valores.forEach(v => $s.append(`<option value="${v}">${v}</option>`));
+              $s.select2({ placeholder: ch==='microarea'?'Todas as microáreas':'Todas', allowClear:true });
             }
           });
 
+          // Aplicar filtros (agora funciona 100%)
           [
-            {el: `#${ids.equipe}`, col: 1},
-            {el: `#${ids.microarea}`, col: 2},
-            ...(filtros.status ? [{el: `#${ids.status}`, col: filtros.status.idx}] : []),
-            ...(filtros.quadrimestre ? [{el: `#${ids.quadrimestre}`, col: filtros.quadrimestre.idx}] : []),
-            ...(filtros.prioridade ? [{el: `#${ids.prioridade}`, col: filtros.prioridade.idx}] : []),
-            ...(filtros.boaspraticas ? [{el: `#${ids.boaspraticas}`, col: filtros.boaspraticas.idx}] : [])
+            {el:`#${ids.equipe}`, col:1},
+            {el:`#${ids.microarea}`, col:2},
+            ...(filtros.status ? [{el:`#${ids.status}`, col:filtros.status.idx}] : []),
+            ...(filtros.quadrimestre ? [{el:`#${ids.quadrimestre}`, col:filtros.quadrimestre.idx}] : []),
+            ...(filtros.prioridade ? [{el:`#${ids.prioridade}`, col:filtros.prioridade.idx}] : []),
+            ...(filtros.boaspraticas ? [{el:`#${ids.boaspraticas}`, col:filtros.boaspraticas.idx}] : [])
           ].forEach(f => {
             $(f.el).off('change.filter').on('change.filter', function() {
-              const vals = $(this).val() || [];
-              const regex = vals.length ? '^(' + vals.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
+              const v = $(this).val() || [];
+              const regex = v.length ? '^(' + v.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
               tabela.column(f.col).search(regex, true, false).draw();
             });
           });
 
-          // PDF: SEMPRE REMOVE A COLUNA EQUIPE, SEMPRE MANDA MICROÁREA
+          // PDF: remove coluna Equipe, mantém Microárea, título mostra equipe filtrada
           document.getElementById(`btnPdf${num}`).onclick = function() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
+            const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
 
-            const microSel = $(`#${ids.microarea}`).val() || [];
+            const equipeSel = $(`#${ids.equipe}`).val() || [];
+            const microSel  = $(`#${ids.microarea}`).val() || [];
 
             const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
             let titulo = titulos[num];
-            if (microSel.length) titulo += ` - Microárea ${microSel.join(', ')}`;
-            doc.text(titulo.length > 100 ? titulo.substring(0,97)+'...' : titulo, 14, 20);
+            if (equipeSel.length) titulo += ` - Equipe ${equipeSel.join(', ')}`;
+            if (microSel.length)  titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
+            doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 20);
 
             const rows = tabela.rows({search:'applied'}).data().toArray();
-            if (!rows.length) return alert('Nenhum dado para gerar o PDF');
+            if (!rows.length) return alert('Nenhum registro encontrado');
 
-            // Cabeçalho do PDF: SEMPRE pula a coluna Equipe (índice 1)
-            const head = ['Nº', cabecalhosReais[1]]; // Nº + Microárea
-            head.push(...cabecalhosReais.slice(2));   // todas as outras colunas
+            // Cabeçalho PDF: SEM Equipe, COM Microárea
+            const head = ['Nº', cabecalhosReais[1]]; // Microárea
+            head.push(...cabecalhosReais.slice(2));
 
-            // Corpo: pula a coluna 1 (Equipe)
-            const body = rows.map((r, i) => {
-              const linha = [(i+1).toString()];
-              linha.push(r[2]); // Microárea (sempre)
-              for (let j = 3; j < r.length; j++) {
-                linha.push(r[j] || '');
-              }
-              return linha;
+            // Corpo: pula coluna 1 (Equipe)
+            const body = rows.map((r,i) => {
+              const l = [(i+1).toString()];
+              l.push(r[2]); // Microárea
+              for (let j=3; j<r.length; j++) l.push(r[j] || '');
+              return l;
             });
 
             doc.autoTable({
@@ -238,24 +240,23 @@
               body: body,
               startY: 30,
               theme: 'striped',
-              styles: {fontSize: 7.5, halign: 'center', cellPadding: 2},
-              headStyles: {fillColor: [0, 123, 255]},
-              columnStyles: { 0: {cellWidth: 12} } // ajusta largura da coluna Nº
+              styles: {fontSize: 7.5, halign: 'center'},
+              headStyles: {fillColor: [0,123,255]}
             });
 
-            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}-${microSel.join('-')||'todas'}.pdf`);
+            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}${equipeSel.length?'-eq'+equipeSel.join('') : ''}.pdf`);
           };
         }
       });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:13}, quadrimestre:{idx:14}});
-      criarTabela(2, 4, 5, 12, {equipe:{idx:1}, status:{idx:11}, quadrimestre:{idx:12}});
-      criarTabela(3, 4, 5, 18, {equipe:{idx:1}});
-      criarTabela(4, 3, 4, 11, {equipe:{idx:1}, prioridade:{idx:10}, boaspraticas:{idx:11}});
-      criarTabela(5, 3, 4, 13, {equipe:{idx:1}, prioridade:{idx:12}, boaspraticas:{idx:13}});
-      criarTabela(6, 3, 4, 10, {equipe:{idx:1}, boaspraticas:{idx:10}});
+      criarTabela(1, 4, 5, 14, {status:{idx:13}, quadrimestre:{idx:14}});
+      criarTabela(2, 4, 5, 12, {status:{idx:11}, quadrimestre:{idx:12}});
+      criarTabela(3, 4, 5, 18);
+      criarTabela(4, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});
+      criarTabela(5, 3, 4, 13, {prioridade:{idx:12}, boaspraticas:{idx:13}});
+      criarTabela(6, 3, 4, 10, {boaspraticas:{idx:10}});
     });
   </script>
 </body>
