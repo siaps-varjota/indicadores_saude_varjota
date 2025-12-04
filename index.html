@@ -83,7 +83,7 @@
     <table id="tabela3" class="display"><thead><tr id="cabecalho3"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 4 - Hipertensão (CORRIGIDO AQUI) -->
+  <!-- Aba 4 - Hipertensão -->
   <div id="tab4" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe4" multiple></select></div>
@@ -146,6 +146,7 @@
 
           let dados = res.data.slice(dataStartIdx);
 
+          // Normalizar colunas de filtro
           Object.keys(filtros).forEach(k => {
             const idx = filtros[k].idx;
             dados.forEach(r => r[idx] = (r[idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
@@ -180,30 +181,41 @@
             boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
           };
 
+          // Preencher filtros
           const todosFiltros = { ...filtros, microarea: {idx:2} };
           Object.keys(todosFiltros).forEach(chave => {
             const id = ids[chave];
             if (id && document.getElementById(id)) {
               const valores = [...new Set(dados.map(r => r[todosFiltros[chave].idx]).filter(Boolean))].sort();
               $(`#${id}`).empty().append(valores.map(v => `<option value="${v}">${v}</option>`));
-              $(`#${id}`).select2({ placeholder: chave==='microarea'?'Todas as microáreas':'Todas', allowClear:true });
+              $(`#${id}`).select2({
+                placeholder: chave==='microarea' ? 'Todas as microáreas' : 'Todas',
+                allowClear: true
+              });
             }
           });
 
-          [{el:`#${ids.equipe}`,col:1}, {el:`#${ids.microarea}`,col:2},
-           ...(filtros.status?[ {el:`#${ids.status}`,col:filtros.status.idx}]:[]),
-           ...(filtros.quadrimestre?[ {el:`#${ids.quadrimestre}`,col:filtros.quadrimestre.idx}]:[]),
-           ...(filtros.prioridade?[ {el:`#${ids.prioridade}`,col:filtros.prioridade.idx}]:[]),
-           ...(filtros.boaspraticas?[ {el:`#${ids.boaspraticas}`,col:filtros.boaspraticas.idx}]:[])
-          ].forEach(f => $(f.el).on('change', function() {
-            const vals = $(this).val()||[];
-            const regex = vals.length ? '^('+vals.map(v=>v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')$' : '';
-            tabela.column(f.col).search(regex, true, false).draw();
-          }));
+          // Aplicar filtros
+          [
+            {el: `#${ids.equipe}`, col: 1},
+            {el: `#${ids.microarea}`, col: 2},
+            ...(filtros.status ? [{el: `#${ids.status}`, col: filtros.status.idx}] : []),
+            ...(filtros.quadrimestre ? [{el: `#${ids.quadrimestre}`, col: filtros.quadrimestre.idx}] : []),
+            ...(filtros.prioridade ? [{el: `#${ids.prioridade}`, col: filtros.prioridade.idx}] : []),
+            ...(filtros.boaspraticas ? [{el: `#${ids.boaspraticas}`, col: filtros.boaspraticas.idx}] : [])
+          ].forEach(f => {
+            $(f.el).off('change').on('change', function() {
+              const vals = $(this).val() || [];
+              const regex = vals.length ? '^(' + vals.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
+              tabela.column(f.col).search(regex, true, false).draw();
+            });
+          });
 
+          // GERAR PDF - CORRIGIDO E PERFEITO
           document.getElementById(`btnPdf${num}`).onclick = function() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+            const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
+
             const equipeSel = $(`#${ids.equipe}`).val() || [];
             const microSel  = $(`#${ids.microarea}`).val() || [];
 
@@ -214,32 +226,46 @@
             doc.text(titulo.length > 100 ? titulo.substring(0,97)+'...' : titulo, 14, 20);
 
             const rows = tabela.rows({search:'applied'}).data().toArray();
-            if (!rows.length) return alert('Nenhum dado para gerar PDF');
+            if (!rows.length) return alert('Nenhum dado para gerar o PDF');
 
-            let head = ['Nº'];
-            let startIdx = 1;
-            if (equipeSel.length === 0) { head.push(cabecalhosReais[0]); startIdx = 1; } else startIdx = 2;
-            if (microSel.length === 0) head.push(cabecalhosReais[1]);
-            head = head.concat(cabecalhosReais.slice(microSel.length === 0 ? 2 : 1));
+            // Cabeçalho do PDF
+            const head = ['Nº'];
+            const incluirEquipe = equipeSel.length === 0;
+            const incluirMicro = microSel.length === 0;
 
-            const body = rows.map((r,i) => {
+            if (incluirEquipe) head.push(cabecalhosReais[0]);  // Equipe
+            if (incluirMicro)  head.push(cabecalhosReais[1]);  // Microárea
+            head.push(...cabecalhosReais.slice(2)); // resto das colunas
+
+            // Corpo do PDF
+            const body = rows.map((r, i) => {
               const linha = [(i+1).toString()];
-              let j = startIdx;
-              if (equipeSel.length === 0) linha.push(r[1]);
-              if (microSel.length === 0) linha.push(r[2]);
-              for (; j < r.length; j++) linha.push(r[j] || '');
+              let col = 1;
+              if (incluirEquipe) { linha.push(r[1]); col = 2; }
+              if (incluirMicro)  { linha.push(r[2]); col = 3; }
+              for (; col < r.length; col++) {
+                linha.push(r[col] || '');
+              }
               return linha;
             });
 
-            doc.autoTable({ head: [head], body, startY: 30, theme: 'striped', styles: {fontSize:7, halign:'center'} });
-            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/g,'-')}-${equipeSel.join('-')||'todas'}-${microSel.join('-')||'todas'}.pdf`);
+            doc.autoTable({
+              head: [head],
+              body: body,
+              startY: 30,
+              theme: 'striped',
+              styles: {fontSize: 7, halign: 'center'},
+              headStyles: {fillColor: [0, 123, 255]}
+            });
+
+            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}-${equipeSel.join('-')||'todas'}-${microSel.join('-')||'todas'}.pdf`);
           };
         }
       });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:12}, quadrimestre:{idx:14}});
+      criarTabela(1, 4, 5, 14, {equipe:{idx:1}, status:{idx:13}, quadrimestre:{idx:14}});
       criarTabela(2, 4, 5, 12, {equipe:{idx:1}, status:{idx:11}, quadrimestre:{idx:12}});
       criarTabela(3, 4, 5, 18, {equipe:{idx:1}});
       criarTabela(4, 3, 4, 11, {equipe:{idx:1}, prioridade:{idx:10}, boaspraticas:{idx:11}});
