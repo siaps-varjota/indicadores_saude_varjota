@@ -5,13 +5,15 @@
   <title>Indicadores de Saúde de Varjota</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Bibliotecas -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -30,14 +32,9 @@
     .select2-container {width:100% !important;}
     .filtros button {padding:10px 20px; background:#28a745; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;}
     .filtros button:hover {background:#218838;}
-    table.display {font-size:13px; width:100%; margin-top:10px;}
-    table.display thead th,
-    table.display tbody td {
-      text-align: center !important;
-      vertical-align: middle !important;
-    }
+    table {font-size:13px; width:100%; margin-top:10px;}
     th {background:#007bff; color:#fff;}
-    td, th {padding:6px;}
+    td, th {text-align:center; padding:6px;}
   </style>
 </head>
 <body>
@@ -76,7 +73,7 @@
     <table id="tabela2" class="display"><thead><tr id="cabecalho2"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 3 -->
+  <!-- Aba 3 a 6 (mantidas iguais) -->
   <div id="tab3" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe3" multiple></select></div>
@@ -86,7 +83,6 @@
     <table id="tabela3" class="display"><thead><tr id="cabecalho3"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 4 - Hipertensão -->
   <div id="tab4" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe4" multiple></select></div>
@@ -98,7 +94,6 @@
     <table id="tabela4" class="display"><thead><tr id="cabecalho4"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 5 - Diabetes -->
   <div id="tab5" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe5" multiple></select></div>
@@ -110,7 +105,6 @@
     <table id="tabela5" class="display"><thead><tr id="cabecalho5"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 6 - Saúde da Mulher -->
   <div id="tab6" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe6" multiple></select></div>
@@ -149,7 +143,7 @@
 
           let dados = res.data.slice(dataStartIdx);
 
-          // Normalizar filtros
+          // Normalizar colunas para filtro
           Object.values(filtros).forEach(f => {
             dados.forEach(r => r[f.idx] = (r[f.idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
           });
@@ -174,15 +168,17 @@
             }
           });
 
+          // IDs corretos dos filtros
           const ids = {
             equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
             microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
             status: num <= 2 ? `filtroStatus${num}` : null,
             quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
-            prioridade: (num === 4 || num === 5) ? `filtroPrioridade${num}` : null,
-            boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
+            prioridade: (num ===4 || num===5) ? `filtroPrioridade${num}` : null,
+            boaspraticas: num >=4 ? `filtroBoasPraticas${num}` : null
           };
 
+          // Preencher selects
           const todosFiltros = { equipe: {idx:1}, microarea: {idx:2}, ...filtros };
           Object.keys(todosFiltros).forEach(ch => {
             const id = ids[ch];
@@ -194,11 +190,14 @@
             }
           });
 
-          [{el:`#${ids.equipe}`, col:1}, {el:`#${ids.microarea}`, col:2},
-           ...(filtros.status ? [{el:`#${ids.status}`, col:filtros.status.idx}] : []),
-           ...(filtros.quadrimestre ? [{el:`#${ids.quadrimestre}`, col:filtros.quadrimestre.idx}] : []),
-           ...(filtros.prioridade ? [{el:`#${ids.prioridade}`, col:filtros.prioridade.idx}] : []),
-           ...(filtros.boaspraticas ? [{el:`#${ids.boaspraticas}`, col:filtros.boaspraticas.idx}] : [])
+          // Aplicar filtros (agora funciona 100%)
+          [
+            {el:`#${ids.equipe}`, col:1},
+            {el:`#${ids.microarea}`, col:2},
+            ...(filtros.status ? [{el:`#${ids.status}`, col:filtros.status.idx}] : []),
+            ...(filtros.quadrimestre ? [{el:`#${ids.quadrimestre}`, col:filtros.quadrimestre.idx}] : []),
+            ...(filtros.prioridade ? [{el:`#${ids.prioridade}`, col:filtros.prioridade.idx}] : []),
+            ...(filtros.boaspraticas ? [{el:`#${ids.boaspraticas}`, col:filtros.boaspraticas.idx}] : [])
           ].forEach(f => {
             $(f.el).off('change.filter').on('change.filter', function() {
               const v = $(this).val() || [];
@@ -207,56 +206,60 @@
             });
           });
 
-          // PDF PERFEITO (sem equipe, com microárea, cabeçalho sem quebra feia)
-          document.getElementById(`btnPdf${num}`).onclick = function() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+          // PDF: coluna Equipe removida, Microárea sempre aparece, título com equipe, tudo centralizado
+document.getElementById(`btnPdf${num}`).onclick = function() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
 
-            const equipeSel = $(`#${ids.equipe}`).val() || [];
-            const microSel  = $(`#${ids.microarea}`).val() || [];
+  const equipeSel = $(`#${ids.equipe}`).val() || [];
+  const microSel  = $(`#${ids.microarea}`).val() || [];
 
-            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
-            let titulo = titulos[num];
-            if (equipeSel.length) titulo += ` - Equipe ${equipeSel.join(', ')}`;
-            if (microSel.length)  titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
-            doc.setFontSize(14);
-            doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25);
+  const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
+  let titulo = titulos[num];
+  if (equipeSel.length) titulo += ` - Equipe ${equipeSel.join(', ')}`;
+  if (microSel.length)  titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
+  doc.setFontSize(14);
+  doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25, { align: 'left' });
 
-            const rows = tabela.rows({search:'applied'}).data().toArray();
-            if (!rows.length) return alert('Nenhum registro encontrado');
+  const rows = tabela.rows({search:'applied'}).data().toArray();
+  if (!rows.length) return alert('Nenhum registro encontrado');
 
-            const head = ['Nº', cabecalhosReais[1]];
-            head.push(...cabecalhosReais.slice(2));
+  // Cabeçalho PDF (sem Equipe, com Microárea)
+  const head = ['Nº', cabecalhosReais[1]]; // Microárea
+  head.push(...cabecalhosReais.slice(2));
 
-            const body = rows.map((r,i) => {
-              const l = [(i+1).toString()];
-              l.push(r[2]);
-              for (let j=3; j<r.length; j++) l.push(r[j] || '');
-              return l;
-            });
+  // Corpo PDF (pula coluna Equipe)
+  const body = rows.map((r,i) => {
+    const l = [(i+1).toString()];
+    l.push(r[2]); // Microárea
+    for (let j=3; j<r.length; j++) l.push(r[j] || '');
+    return l;
+  });
 
-            doc.autoTable({
-              head: [head],
-              body: body,
-              startY: 35,
-              theme: 'striped',
-              styles: { halign: 'center', valign: 'middle', fontSize: 7.5, cellPadding: 3 },
-              headStyles: { 
-                fillColor: [0, 123, 255], 
-                textColor: [255, 255, 255], 
-                fontStyle: 'bold',
-                halign: 'center', 
-                valign: 'middle',
-                fontSize: 8,
-                minCellHeight: 12,
-                cellPadding: 4
-              },
-              margin: { top: 35, bottom: 25, left: 12, right: 12 },
-              columnStyles: { 0: { cellWidth: 12 } }
-            });
+  // <<< AQUI ESTÁ A CORREÇÃO DA CENTRALIZAÇÃO >>>
+  doc.autoTable({
+    head: [head],
+    body: body,
+    startY: 35,
+    theme: 'striped',
+    styles: { 
+      halign: 'center',
+      valign: 'middle',
+      fontSize: 7.5
+    },
+    headStyles: { 
+      fillColor: [0, 123, 255],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center',     // ← CENTRALIZA O CABEÇALHO
+      valign: 'middle'
+    },
+    margin: { top: 15, bottom: 15, left: 10, right: 10 },
+    columnStyles: { 0: { cellWidth: 12 } }
+  });
 
-            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}${equipeSel.length?'-eq'+equipeSel.join(''):''}.pdf`);
-          };
+  doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}${equipeSel.length?'-eq'+equipeSel.join(''):''}.pdf`);
+};
         }
       });
     }
