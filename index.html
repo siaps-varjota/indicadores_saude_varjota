@@ -206,46 +206,60 @@
             });
           });
 
-          // PDF: remove coluna Equipe, mantém Microárea, título mostra equipe filtrada
-          document.getElementById(`btnPdf${num}`).onclick = function() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+          // PDF: coluna Equipe removida, Microárea sempre aparece, título com equipe, tudo centralizado
+document.getElementById(`btnPdf${num}`).onclick = function() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
 
-            const equipeSel = $(`#${ids.equipe}`).val() || [];
-            const microSel  = $(`#${ids.microarea}`).val() || [];
+  const equipeSel = $(`#${ids.equipe}`).val() || [];
+  const microSel  = $(`#${ids.microarea}`).val() || [];
 
-            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
-            let titulo = titulos[num];
-            if (equipeSel.length) titulo += ` - Equipe ${equipeSel.join(', ')}`;
-            if (microSel.length)  titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
-            doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 20);
+  const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
+  let titulo = titulos[num];
+  if (equipeSel.length) titulo += ` - Equipe ${equipeSel.join(', ')}`;
+  if (microSel.length)  titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
+  doc.setFontSize(14);
+  doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25, { align: 'left' });
 
-            const rows = tabela.rows({search:'applied'}).data().toArray();
-            if (!rows.length) return alert('Nenhum registro encontrado');
+  const rows = tabela.rows({search:'applied'}).data().toArray();
+  if (!rows.length) return alert('Nenhum registro encontrado');
 
-            // Cabeçalho PDF: SEM Equipe, COM Microárea
-            const head = ['Nº', cabecalhosReais[1]]; // Microárea
-            head.push(...cabecalhosReais.slice(2));
+  // Cabeçalho PDF (sem Equipe, com Microárea)
+  const head = ['Nº', cabecalhosReais[1]]; // Microárea
+  head.push(...cabecalhosReais.slice(2));
 
-            // Corpo: pula coluna 1 (Equipe)
-            const body = rows.map((r,i) => {
-              const l = [(i+1).toString()];
-              l.push(r[2]); // Microárea
-              for (let j=3; j<r.length; j++) l.push(r[j] || '');
-              return l;
-            });
+  // Corpo PDF (pula coluna Equipe)
+  const body = rows.map((r,i) => {
+    const l = [(i+1).toString()];
+    l.push(r[2]); // Microárea
+    for (let j=3; j<r.length; j++) l.push(r[j] || '');
+    return l;
+  });
 
-            doc.autoTable({
-              head: [head],
-              body: body,
-              startY: 30,
-              theme: 'striped',
-              styles: {fontSize: 7.5, halign: 'center'},
-              headStyles: {fillColor: [0,123,255]}
-            });
+  // <<< AQUI ESTÁ A CORREÇÃO DA CENTRALIZAÇÃO >>>
+  doc.autoTable({
+    head: [head],
+    body: body,
+    startY: 35,
+    theme: 'striped',
+    styles: { 
+      halign: 'center',
+      valign: 'middle',
+      fontSize: 7.5
+    },
+    headStyles: { 
+      fillColor: [0, 123, 255],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center',     // ← CENTRALIZA O CABEÇALHO
+      valign: 'middle'
+    },
+    margin: { top: 35, bottom: 25, left: 15, right: 15 },
+    columnStyles: { 0: { cellWidth: 12 } }
+  });
 
-            doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}${equipeSel.length?'-eq'+equipeSel.join('') : ''}.pdf`);
-          };
+  doc.save(`${titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-')}${equipeSel.length?'-eq'+equipeSel.join(''):''}.pdf`);
+};
         }
       });
     }
