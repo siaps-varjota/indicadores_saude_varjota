@@ -157,68 +157,82 @@
     };
 
     function gerarPDF(num, tabela, cabecalhosReais, idsFiltro) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-      // Aplica a fonte DejaVuSans para suporte a ✓ e acentos
-      doc.setFont('DejaVuSans', 'normal');
-      doc.setFontSize(14);
+  // Força fonte com suporte total a acentos (DejaVuSans já carregada)
+  doc.setFont('DejaVuSans', 'normal');
+  doc.setFontSize(14);
 
-      const equipeSel = $(`#${idsFiltro.equipe}`).val() || [];
-      const microSel   = $(`#${idsFiltro.microarea}`).val() || [];
-      const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
-      let titulo = titulos[num];
+  const equipeSel = $(`#${idsFiltro.equipe}`).val() || [];
+  const microSel   = $(`#${idsFiltro.microarea}`).val() || [];
+  const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
+  let titulo = titulos[num];
 
-      if (equipeSel.length === 1) titulo += ` - Equipe ${equipeSel[0]}`;
-      else if (equipeSel.length > 1) titulo += ` - Equipes ${equipeSel.join(', ')}`;
-      if (microSel.length) titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
+  if (equipeSel.length === 1) titulo += ` - Equipe ${equipeSel[0]}`;
+  else if (equipeSel.length > 1) titulo += ` - Equipes ${equipeSel.join(', ')}`;
+  if (microSel.length) titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
 
-      doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25);
+  doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25);
 
-      const rows = tabela.rows({search:'applied'}).data().toArray();
-      if (!rows.length) return alert('Nenhum registro encontrado com os filtros aplicados');
+  const rows = tabela.rows({search:'applied'}).data().toArray();
+  if (!rows.length) return alert('Nenhum registro encontrado com os filtros aplicados');
 
-      const incluirEquipe = equipeSel.length !== 1;
+  const incluirEquipe = equipeSel.length !== 1;
 
-      const head = ['Nº'];
-      if (incluirEquipe) head.push(cabecalhosReais[0]);
-      head.push(cabecalhosReais[1]);
-      head.push(...cabecalhosReais.slice(2));
+  const head = ['Nº'];
+  if (incluirEquipe) head.push(cabecalhosReais[0]);
+  head.push(cabecalhosReais[1]);
+  head.push(...cabecalhosReais.slice(2));
 
-      const body = rows.map((r, i) => {
-        const linha = [(i + 1).toString()];
-        if (incluirEquipe) linha.push(r[1]);
-        linha.push(r[2]);
-        for (let j = 3; j < r.length; j++) linha.push(r[j] || '');
-        return linha;
-      });
+  // ←←← AQUI ESTÁ A MÁGICA ←←←
+  const body = rows.map((r, i) => {
+    const linha = [(i + 1).toString()];
+    if (incluirEquipe) linha.push(r[1]);
+    linha.push(r[2]);
 
-      doc.autoTable({
-        head: [head],
-        body: body,
-        startY: 35,
-        theme: 'striped',
-        styles: {
-          font: 'DejaVuSans',
-          fontStyle: 'normal',
-          fontSize: 7.5,
-          halign: 'center',
-          valign: 'middle'
-        },
-        headStyles: {
-          fillColor: [0, 123, 255],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold',
-          font: 'DejaVuSans'
-        },
-        margin: { top: 12, bottom: 12, left: 8, right: 8 },
-        columnStyles: { 0: { cellWidth: 12 } }
-      });
+    for (let j = 3; j < r.length; j++) {
+      let celula = r[j] || '';
+      // Substitui QUALQUER tipo de check (✓ ✔ ✔ ✔ ✔ etc.) por "SIM"
+      celula = celula.toString().trim();
+      if (celula.match(/[\u2700-\u27BF]|[\u2600-\u26FF]|✓|✔|✔|✔|✔|✔|✔|✔/)) {
+        celula = 'SIM';
+      }
+      // Opcional: se quiser deixar "NÃO" quando estiver vazio ou com "-"
+      if (celula === '' || celula === '-' || celula === 'Não informada') {
+        celula = 'NÃO';
+      }
+      linha.push(celula);
+    }
+    return linha;
+  });
 
-      let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-');
-      if (equipeSel.length === 1) nomeArquivo += `-eq${equipeSel[0]}`;
-      else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
-      doc.save(nomeArquivo + '.pdf');
+  doc.autoTable({
+    head: [head],
+    body: body,
+    startY: 35,
+    theme: 'striped',
+    styles: {
+      font: 'DejaVuSans',
+      fontSize: 7.8,
+      halign: 'center',
+      valign: 'middle'
+    },
+    headStyles: {
+      fillColor: [0, 123, 255],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      font: 'DejaVuSans'
+    },
+    margin: { top: 12, bottom: 12, left: 8, right: 8 },
+    columnStyles: { 0: { cellWidth: 12 } }
+  });
+
+  let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-');
+  if (equipeSel.length === 1) nomeArquivo += `-eq${equipeSel[0]}`;
+  else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
+  doc.save(nomeArquivo + '.pdf');
+}
     }
 
     function criarTabela(num, headerRowIdx, dataStartIdx, totalCols, filtros = {}) {
