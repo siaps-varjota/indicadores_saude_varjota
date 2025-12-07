@@ -214,81 +214,81 @@
           });
 
                    // BOTÃO GERAR PDF COM LÓGICA INTELIGENTE PARA COLUNA EQUIPE
-          document.getElementById(`btnPdf${num}`).onclick = function() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
+         document.getElementById(`btnPdf${num}`).onclick = function() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
 
-            const equipeSel = $(`#${ids.equipe}`).val() || [];
-            const microSel  = $(`#${ids.microarea}`).val() || [];
+  // === DEFINE FONTE QUE SUPORTA ✓ E ACENTOS ===
+  doc.setFont('DejaVuSans', 'normal');  // Esta é a chave!
+  doc.setFontSize(14);
 
-            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
-            let titulo = titulos[num];
+  const equipeSel = $(`#${ids.equipe}`).val() || [];
+  const microSel = $(`#${ids.microarea}`).val() || [];
+  const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
+  let titulo = titulos[num];
 
-            // Monta título com equipe(s) e microárea(s)
-            if (equipeSel.length === 1) {
-              titulo += ` - Equipe ${equipeSel[0]}`;
-            } else if (equipeSel.length > 1) {
-              titulo += ` - Equipes ${equipeSel.join(', ')}`;
-            }
-            if (microSel.length) {
-              titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
-            }
+  if (equipeSel.length === 1) {
+    titulo += ` - Equipe ${equipeSel[0]}`;
+  } else if (equipeSel.length > 1) {
+    titulo += ` - Equipes ${equipeSel.join(', ')}`;
+  }
+  if (microSel.length) {
+    titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
+  }
 
-            doc.setFontSize(14);
-            doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25);
+  doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25);
 
-            const rows = tabela.rows({search:'applied'}).data().toArray();
-            if (!rows.length) return alert('Nenhum registro encontrado');
+  const rows = tabela.rows({search:'applied'}).data().toArray();
+  if (!rows.length) return alert('Nenhum registro encontrado');
 
-            // DECISÃO: incluir coluna Equipe ou não?
-            const incluirEquipe = equipeSel.length !== 1; // true se 0 ou >1 equipes selecionadas
+  const incluirEquipe = equipeSel.length !== 1;
 
-            // Cabeçalho do PDF
-            const head = ['Nº'];
-            if (incluirEquipe) head.push(cabecalhosReais[0]); // Coluna Equipe (índice 0)
-            head.push(cabecalhosReais[1]); // Microárea (sempre aparece)
-            head.push(...cabecalhosReais.slice(2)); // Demais colunas
+  const head = ['Nº'];
+  if (incluirEquipe) head.push(cabecalhosReais[0]);
+  head.push(cabecalhosReais[1]);
+  head.push(...cabecalhosReais.slice(2));
 
-            // Corpo do PDF
-            const body = rows.map((r, i) => {
-              const linha = [(i + 1).toString()];
-              if (incluirEquipe) linha.push(r[1]);        // Equipe
-              linha.push(r[2]);                          // Microárea
-              for (let j = 3; j < r.length; j++) {
-                linha.push(r[j] || '');
-              }
-              return linha;
-            });
+  const body = rows.map((r, i) => {
+    const linha = [(i + 1).toString()];
+    if (incluirEquipe) linha.push(r[1]);
+    linha.push(r[2]);
+    for (let j = 3; j < r.length; j++) {
+      linha.push(r[j] || '');
+    }
+    return linha;
+  });
 
-            doc.autoTable({
-              head: [head],
-              body: body,
-              startY: 35,
-              theme: 'striped',
-              styles: { 
-                halign: 'center',
-                valign: 'middle',
-                fontSize: 7.5
-              },
-              headStyles: { 
-                fillColor: [0, 123, 255],
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-                halign: 'center',
-                valign: 'middle'
-              },
-              margin: { top: 12, bottom:12, left:8, right:8 },
-              columnStyles: { 
-                0: { cellWidth: 12 } // coluna Nº
-              }
-            });
+  doc.autoTable({
+    head: [head],
+    body: body,
+    startY: 35,
+    theme: 'striped',
+    styles: {
+      halign: 'center',
+      valign: 'middle',
+      fontSize: 7.5,
+      font: 'DejaVuSans',        // Força a fonte aqui também
+      fontStyle: 'normal'
+    },
+    headStyles: {
+      fillColor: [0, 123, 255],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center',
+      valign: 'middle',
+      font: 'DejaVuSans'
+    },
+    margin: { top: 12, bottom:12, left:8, right:8 },
+    columnStyles: {
+      0: { cellWidth: 12 }
+    }
+  });
 
-            // Nome do arquivo
-            let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-');
-            if (equipeSel.length === 1) nomeArquivo += `-eq${equipeSel[0]}`;
-            else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
-            doc.save(nomeArquivo + '.pdf');
-          };
+  let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-');
+  if (equipeSel.length === 1) nomeArquivo += `-eq${equipeSel[0]}`;
+  else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
+  doc.save(nomeArquivo + '.pdf');
+};          };
         }
       });
     }
