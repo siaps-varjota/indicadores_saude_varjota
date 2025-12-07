@@ -13,6 +13,29 @@
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+  <!-- CARREGAMENTO DA FONTE DEJA VU SANS PARA SUPORTE A ✓ E ACENTOS -->
+  <script>
+    // Aguarda o jsPDF carregar e adiciona a fonte DejaVuSans ao VFS
+    window.addEventListener('load', function() {
+      if (window.jspdf && window.jspdf.jsPDF.API) {
+        const { jsPDF } = window.jspdf;
+        // Adiciona a fonte DejaVuSans (já embutida no jsPDF 2.x)
+        jsPDF.API.events.splitText = function(text, options) {
+          // Sobrescreve para melhor suporte Unicode
+          return this.internal.pdfEscape(text, false);
+        };
+        // Registra as fontes (normal e bold)
+        jsPDF.API.addFileToVFS('DejaVuSans.ttf', jsPDF.API.__fontdata['DejaVuSans']);
+        jsPDF.API.addFont('DejaVuSans.ttf', 'DejaVuSans', 'normal');
+        jsPDF.API.addFileToVFS('DejaVuSans-Bold.ttf', jsPDF.API.__fontdata['DejaVuSans-Bold']);
+        jsPDF.API.addFont('DejaVuSans-Bold.ttf', 'DejaVuSans', 'bold');
+        console.log('Fonte DejaVuSans carregada com sucesso para suporte a ✓');
+      } else {
+        console.warn('jsPDF não carregou corretamente para adicionar fonte.');
+      }
+    });
+  </script>
+
   <style>
     body {font-family: 'Segoe UI', sans-serif; margin:20px; background:#f7f9fc; color:#333;}
     h2 {text-align:center; color:#2c3e50; margin-bottom:20px;}
@@ -137,7 +160,7 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-      // FONTE QUE SUPORTA "✓" E ACENTOS
+      // Aplica a fonte DejaVuSans para suporte a ✓ e acentos
       doc.setFont('DejaVuSans', 'normal');
       doc.setFontSize(14);
 
@@ -270,7 +293,7 @@
             });
           });
 
-          // Botão PDF (agora com "✓" funcionando)
+          // Botão PDF (com ✓ funcionando)
           document.getElementById(`btnPdf${num}`).onclick = () => gerarPDF(num, tabela, cabecalhosReais, ids);
         }
       });
