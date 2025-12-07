@@ -244,50 +244,96 @@
             const incluirEquipe = equipeSel.length !== 1; // true se 0 ou >1 equipes selecionadas
 
             // Cabeçalho do PDF
-            const head = ['Nº'];
-            if (incluirEquipe) head.push(cabecalhosReais[0]); // Coluna Equipe (índice 0)
-            head.push(cabecalhosReais[1]); // Microárea (sempre aparece)
-            head.push(...cabecalhosReais.slice(2)); // Demais colunas
+const head = ['Nº'];
+if (incluirEquipe) head.push(cabecalhosReais[0]);        // Equipe
+head.push(cabecalhosReais[1]);                           // Microárea
+head.push(...cabecalhosReais.slice(2));                  // Demais colunas
 
-            // Corpo do PDF
-            const body = rows.map((r, i) => {
-              const linha = [(i + 1).toString()];
-              if (incluirEquipe) linha.push(r[1]);        // Equipe
-              linha.push(r[2]);                          // Microárea
-              for (let j = 3; j < r.length; j++) {
-                linha.push(r[j] || '');
-              }
-              return linha;
-            });
+// Corpo do PDF (com check verde garantido)
+const body = rows.map((r, i) => {
+    const linha = [(i + 1).toString()];
+    const estilosLinha = []; // estilos individuais por célula
 
-            doc.autoTable({
-              head: [head],
-              body: body,
-              startY: 35,
-              theme: 'striped',
-              styles: { 
-                halign: 'center',
-                valign: 'middle',
-                fontSize: 7.5
-              },
-              headStyles: { 
-                fillColor: [0, 123, 255],
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-                halign: 'center',
-                valign: 'middle'
-              },
-              margin: { top: 12, bottom:12, left:8, right:8 },
-              columnStyles: { 
-                0: { cellWidth: 12 } // coluna Nº
-              }
-            });
+    if (incluirEquipe) {
+        linha.push(r[1] || '');
+        estilosLinha.push({});
+    }
 
-            // Nome do arquivo
-            let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-');
-            if (equipeSel.length === 1) nomeArquivo += `-eq${equipeSel[0]}`;
-            else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
-            doc.save(nomeArquivo + '.pdf');
+    linha.push(r[2] || '');
+    estilosLinha.push({});
+
+    for (let j = 3; j < r.length; j++) {
+        let valor = r[j] || '';
+
+        // Remove HTML e detecta qualquer tipo de "check" que exista na tela
+        if (typeof valor === 'string') {
+            valor = valor
+                .replace(/<[^>]*>/g, '')                  // tira todo HTML
+                .replace(/✓|✔|check|sim|ok|yes|1/gi, '✓') // padroniza tudo para ✓
+                .trim();
+        }
+
+        const temCheck = valor === '✓' || valor === '✔' || valor === '✓';
+
+        linha.push(temCheck ? '✓' : valor);
+
+        // Estilo verde + negrito + maior só para células com check
+        estilosLinha.push(temCheck ? {
+            textColor: [40, 167, 69],     // verde bootstrap #28a745
+            fontStyle: 'bold',
+            fontSize: 11,
+            halign: 'center'
+        } : {});
+    }
+
+    return {
+        cells: linha,
+        estilos: estilosLinha
+    };
+});
+
+// Geração da tabela no PDF
+doc.autoTable({
+    head: [head],
+    body: body.map(item => item.cells),
+    startY: 35,
+    theme: 'striped',
+    styles: {
+        fontSize: 7.5,
+        cellPadding: 3,
+        halign: 'center',
+        valign: 'middle',
+        font: 'helvetica' // fonte padrão do jsPDF (garante compatibilidade)
+    },
+    headStyles: {
+        fillColor: [0, 123, 255],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center',
+        valign: 'middle'
+    },
+    columnStyles: {
+        0: { cellWidth: 12 } // coluna Nº
+    },
+    margin: { top: 12, bottom: 12, left: 8, right: 8 },
+
+    // === AQUI É O SEGREDO: aplica o estilo verde por célula ===
+    didParseCell: function (data) {
+        if (data.section === 'body') {
+            const estilos = body[data.row.index].estilos;
+            if (estilos && estilos[data.column.index]) {
+                Object.assign(data.cell.styles, estilos[data.column.index]);
+            }
+        }
+    }
+});
+
+// Nome do arquivo
+let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi, '-');
+if (equipeSel.length === 1) nomeArquivo += `-eq-${equipeSel[0]}`;
+else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
+
+doc.save(nomeArquivo + '.pdf');
           };
         }
       });
