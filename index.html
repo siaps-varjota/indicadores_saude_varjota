@@ -176,14 +176,14 @@
             }
           });
 
-          // IDs corretos dos filtros
+            // IDs corretos dos filtros
           const ids = {
             equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
             microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
             status: num <= 2 ? `filtroStatus${num}` : null,
             quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
-            prioridade: (num ===4 || num===5) ? `filtroPrioridade${num}` : null,
-            boaspraticas: num >=4 ? `filtroBoasPraticas${num}` : null
+            prioridade: (num >= 4 && num <= 6) ? `filtroPrioridade${num}` : null,  // ← CORRIGIDO AQUI
+            boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
           };
 
           // Preencher selects
