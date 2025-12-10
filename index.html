@@ -126,12 +126,13 @@
     <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 7 - Pessoa Idosa (dados a partir da linha 4, colunas B a K, filtros em B=Equipe, C=Microárea, K=Prioridade) -->
+  <!-- Aba 7 - Pessoa Idosa (dados a partir da linha 4, colunas B a L, filtros em B=Equipe, C=Microárea, K=Prioridade, L=Boas Práticas) -->
   <div id="tab7" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe7" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea7" multiple></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade7" multiple></select></div>
+       <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas7" multiple></select></div>
       <button id="btnPdf7">Gerar PDF</button>
     </div>
     <table id="tabela7" class="display"><thead><tr id="cabecalho7"></tr></thead><tbody></tbody></table>
@@ -189,7 +190,7 @@
             status: num <= 2 ? `filtroStatus${num}` : null,
             quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
             prioridade: (num >= 4 && num <= 7) ? `filtroPrioridade${num}` : null,
-            boaspraticas: num >= 4 && num <=6 ? `filtroBoasPraticas${num}` : null
+            boaspraticas: num >= 4 && num <=7 ? `filtroBoasPraticas${num}` : null
           };
           const todosFiltros = { equipe: {idx:1}, microarea: {idx:2}, ...filtros };
           Object.keys(todosFiltros).forEach(ch => {
@@ -291,7 +292,7 @@
       criarTabela(4, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});
       criarTabela(5, 3, 4, 13, {prioridade:{idx:12}, boaspraticas:{idx:13}});
       criarTabela(6, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});
-      criarTabela(7, 3, 4, 10, {prioridade:{idx:10}});  <!-- B=1 (Equipe), C=2 (Microárea), K=10 (Prioridade) -->
+      criarTabela(7, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});  <!-- B=1 (Equipe), C=2 (Microárea), K=10 (Prioridade) -->
     });
   </script>
 </body>
