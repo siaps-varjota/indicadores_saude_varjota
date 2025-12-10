@@ -48,6 +48,7 @@
     <button class="tab-button" onclick="openTab('tab4')">Hipertensão</button>
     <button class="tab-button" onclick="openTab('tab5')">Diabetes</button>
     <button class="tab-button" onclick="openTab('tab6')">Saúde da Mulher</button>
+    <button class="tab-button" onclick="openTab('tab7')">Nova Tabela</button>
   </div>
 
   <!-- Aba 1 -->
@@ -61,7 +62,6 @@
     </div>
     <table id="tabela1" class="display"><thead><tr id="cabecalho1"></tr></thead><tbody></tbody></table>
   </div>
-
   <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
     <div class="filtros">
@@ -73,13 +73,12 @@
     </div>
     <table id="tabela2" class="display"><thead><tr id="cabecalho2"></tr></thead><tbody></tbody></table>
   </div>
-
   <!-- Aba 3 - Gestação e Puerpério (com filtro ≥ e ≤) -->
   <div id="tab3" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe3" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea3" multiple></select></div>
-      
+     
       <div class="filtro-group">
         <label>Idade Gestacional</label>
         <div style="display:flex; gap:10px; align-items:center;">
@@ -88,12 +87,11 @@
           <input type="number" id="idadeGestMenor" placeholder="≤" style="width:90px;" title="Menor ou igual a">
         </div>
       </div>
-      
+     
       <button id="btnPdf3">Gerar PDF</button>
     </div>
     <table id="tabela3" class="display"><thead><tr id="cabecalho3"></tr></thead><tbody></tbody></table>
   </div>
-
   <!-- Aba 4 -->
   <div id="tab4" class="tab-content">
     <div class="filtros">
@@ -105,7 +103,6 @@
     </div>
     <table id="tabela4" class="display"><thead><tr id="cabecalho4"></tr></thead><tbody></tbody></table>
   </div>
-
   <!-- Aba 5 -->
   <div id="tab5" class="tab-content">
     <div class="filtros">
@@ -117,7 +114,6 @@
     </div>
     <table id="tabela5" class="display"><thead><tr id="cabecalho5"></tr></thead><tbody></tbody></table>
   </div>
-
   <!-- Aba 6 -->
   <div id="tab6" class="tab-content">
     <div class="filtros">
@@ -130,6 +126,17 @@
     <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aba 7 -->
+  <div id="tab7" class="tab-content">
+    <div class="filtros">
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe7" multiple></select></div>
+      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea7" multiple></select></div>
+      <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade7" multiple></select></div>
+      <button id="btnPdf7">Gerar PDF</button>
+    </div>
+    <table id="tabela7" class="display"><thead><tr id="cabecalho7"></tr></thead><tbody></tbody></table>
+  </div>
+
   <script>
     function openTab(id) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -137,16 +144,15 @@
       document.getElementById(id).classList.add('active');
       document.querySelector(`[onclick="openTab('${id}')"]`).classList.add('active');
     }
-
     const urls = {
       1: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1142482515&single=true&output=csv",
       2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1899832726&single=true&output=csv",
       3: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA7ZEnYITSAdJO8T5LvvnDewjPeqMT57kDv_oSeuFUUznKI3FQ5pGg2Ic34k4ZShbWtONP-dvJOABQ/pub?gid=1768767677&single=true&output=csv",
       4: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9k_e_-jlJbu3GvtHBhvCfuUbuC7l85MV_jjZRnbsd3lIqmoKF2pLhGl1JnSfziVXze5zkGCXdPb2n/pub?output=csv",
       5: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbfV1Kc6st6COoy-FxrbfnC_Ac3bxobCVY_-HXj0oyXNnVo7uVld2VVJh7gAhXAPGHXlZGutzjivjP/pub?gid=1534038569&single=true&output=csv",
-      6: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLX3B-1FNtn9BZVDseNGuRiPtUUtm13TTx_vI-quwscEMMsTVCp-NjL7b9YH4Cr4vgSI6jAH52M8mk/pub?gid=1711913800&single=true&output=csv"
+      6: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLX3B-1FNtn9BZVDseNGuRiPtUUtm13TTx_vI-quwscEMMsTVCp-NjL7b9YH4Cr4vgSI6jAH52M8mk/pub?gid=1711913800&single=true&output=csv",
+      7: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsrC8_qNUsaD2Yem4lAii-GtidlqdFcR65dSpjEKxv5u6Xwv2cH11_EkkYzxDFGYAB6d5fbcCN1mMo/pub?gid=1534038569&single=true&output=csv"
     };
-
     function criarTabela(num, headerRowIdx, dataStartIdx, totalCols, filtros = {}) {
       Papa.parse(urls[num] + "&t=" + Date.now(), {
         download: true,
@@ -156,11 +162,9 @@
           const cabecalhosTabela = ['Nº', ...cabecalhosReais];
           document.getElementById(`cabecalho${num}`).innerHTML = cabecalhosTabela.map(h => `<th>${h||'Sem nome'}</th>`).join('');
           let dados = res.data.slice(dataStartIdx);
-
           Object.values(filtros).forEach(f => {
             dados.forEach(r => r[f.idx] = (r[f.idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
           });
-
           const tbody = document.querySelector(`#tabela${num} tbody`);
           tbody.innerHTML = '';
           dados.forEach(row => {
@@ -170,7 +174,6 @@
               tbody.appendChild(tr);
             }
           });
-
           const tabela = $(`#tabela${num}`).DataTable({
             pageLength: 10,
             destroy: true,
@@ -180,16 +183,14 @@
               });
             }
           });
-
           const ids = {
             equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
             microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
             status: num <= 2 ? `filtroStatus${num}` : null,
             quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
-            prioridade: (num >= 4 && num <= 6) ? `filtroPrioridade${num}` : null,
-            boaspraticas: num >= 4 ? `filtroBoasPraticas${num}` : null
+            prioridade: (num >= 4 && num <= 7) ? `filtroPrioridade${num}` : null,
+            boaspraticas: num >= 4 && num <=6 ? `filtroBoasPraticas${num}` : null
           };
-
           const todosFiltros = { equipe: {idx:1}, microarea: {idx:2}, ...filtros };
           Object.keys(todosFiltros).forEach(ch => {
             const id = ids[ch];
@@ -200,7 +201,6 @@
               $s.select2({ placeholder: ch==='microarea'?'Todas as microáreas':'Todas', allowClear:true });
             }
           });
-
           [
             {el:`#${ids.equipe}`, col:1},
             {el:`#${ids.microarea}`, col:2},
@@ -215,68 +215,50 @@
               tabela.column(f.col).search(regex, true, false).draw();
             });
           });
-
           // FILTRO ESPECIAL DE IDADE GESTACIONAL (≥ e ≤) - apenas aba 3
           if (num === 3) {
             const $maior = $('#idadeGestMaior');
             const $menor = $('#idadeGestMenor');
-
             const aplicarFiltroIdade = $.fn.dataTable.util.throttle(function () {
               const maior = $maior.val() ? parseInt($maior.val(), 10) : null;
               const menor = $menor.val() ? parseInt($menor.val(), 10) : null;
-
-              // Remove todos os filtros customizados anteriores
               while ($.fn.dataTable.ext.search.length > 0) {
                 $.fn.dataTable.ext.search.pop();
               }
-
-              // Adiciona novo filtro
               $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
                 if (settings.nTable !== tabela.table().node()) return true;
-
                 const valorStr = data[6] ? data[6].toString().trim() : '';
                 if (!valorStr || isNaN(valorStr)) return false;
-
                 const valor = parseInt(valorStr, 10);
-
-                if (maior !== null && valor < maior) return false;  // ≥
-                if (menor !== null && valor > menor) return false;  // ≤
-
+                if (maior !== null && valor < maior) return false;
+                if (menor !== null && valor > menor) return false;
                 return true;
               });
-
               tabela.draw();
             }, 300);
-
             $maior.off('keyup change').on('keyup change', aplicarFiltroIdade);
             $menor.off('keyup change').on('keyup change', aplicarFiltroIdade);
           }
-
           // Botão PDF
           document.getElementById(`btnPdf${num}`).onclick = function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
             const equipeSel = $(`#${ids.equipe}`).val() || [];
             const microSel = $(`#${ids.microarea}`).val() || [];
-            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher'];
+            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher','Pessoa Idosa'];
             let titulo = titulos[num];
-
             if (equipeSel.length === 1) titulo += ` - Equipe ${equipeSel[0]}`;
             else if (equipeSel.length > 1) titulo += ` - Equipes ${equipeSel.join(', ')}`;
             if (microSel.length) titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
-
             doc.setFontSize(14);
             doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25);
-
             const rows = tabela.rows({search:'applied'}).data().toArray();
             if (!rows.length) return alert('Nenhum registro encontrado');
-
             const incluirEquipe = equipeSel.length !== 1;
             const head = ['Nº'];
             if (incluirEquipe) head.push(cabecalhosReais[0]);
             head.push(cabecalhosReais[1]);
             head.push(...cabecalhosReais.slice(2));
-
             const body = rows.map((r, i) => {
               const linha = [(i + 1).toString()];
               if (incluirEquipe) linha.push(r[1]);
@@ -284,7 +266,6 @@
               for (let j = 3; j < r.length; j++) linha.push(r[j] || '');
               return linha;
             });
-
             doc.autoTable({
               head: [head],
               body: body,
@@ -295,7 +276,6 @@
               margin: { top: 12, bottom:12, left:8, right:8 },
               columnStyles: { 0: { cellWidth: 12 } }
             });
-
             let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-');
             if (equipeSel.length === 1) nomeArquivo += `-eq${equipeSel[0]}`;
             else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
@@ -304,7 +284,6 @@
         }
       });
     }
-
     document.addEventListener('DOMContentLoaded', () => {
       criarTabela(1, 4, 5, 14, {status:{idx:12}, quadrimestre:{idx:14}});
       criarTabela(2, 4, 5, 12, {status:{idx:11}, quadrimestre:{idx:12}});
@@ -312,6 +291,7 @@
       criarTabela(4, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});
       criarTabela(5, 3, 4, 13, {prioridade:{idx:12}, boaspraticas:{idx:13}});
       criarTabela(6, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});
+      criarTabela(7, 3, 4, 10, {prioridade:{idx:10}});  <!-- B=1 (Equipe), C=2 (Microárea), K=10 (Prioridade) -->
     });
   </script>
 </body>
