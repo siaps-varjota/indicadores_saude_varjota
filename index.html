@@ -54,7 +54,7 @@
   <!-- Aba 1 -->
   <div id="tab1" class="tab-content active">
     <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe" multiple></select></div>
+      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe1" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea1" multiple></select></div>
       <div class="filtro-group"><label>Status</label><select id="filtroStatus1" multiple></select></div>
       <div class="filtro-group"><label>Quadrimestre</label><select id="filtroQuadrimestre1" multiple></select></div>
@@ -62,6 +62,7 @@
     </div>
     <table id="tabela1" class="display"><thead><tr id="cabecalho1"></tr></thead><tbody></tbody></table>
   </div>
+
   <!-- Aba 2 -->
   <div id="tab2" class="tab-content">
     <div class="filtros">
@@ -73,26 +74,26 @@
     </div>
     <table id="tabela2" class="display"><thead><tr id="cabecalho2"></tr></thead><tbody></tbody></table>
   </div>
-  <!-- Aba 3 - Gestação e Puerpério (com filtro ≥ e ≤) -->
+
+  <!-- Aba 3 -->
   <div id="tab3" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe3" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea3" multiple></select></div>
-     
       <div class="filtro-group">
         <label>Idade Gestacional</label>
         <div style="display:flex; gap:10px; align-items:center;">
-          <input type="number" id="idadeGestMaior" placeholder="≥" style="width:90px;" title="Maior ou igual a">
+          <input type="number" id="idadeGestMaior" placeholder="maior ou igual a" style="width:90px;">
           <span>e</span>
-          <input type="number" id="idadeGestMenor" placeholder="≤" style="width:90px;" title="Menor ou igual a">
+          <input type="number" id="idadeGestMenor" placeholder="menor ou igual a" style="width:90px;">
         </div>
       </div>
-     
       <button id="btnPdf3">Gerar PDF</button>
     </div>
     <table id="tabela3" class="display"><thead><tr id="cabecalho3"></tr></thead><tbody></tbody></table>
   </div>
-  <!-- Aba 4 -->
+
+  <!-- Aba 4 - Hipertensão -->
   <div id="tab4" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe4" multiple></select></div>
@@ -103,7 +104,8 @@
     </div>
     <table id="tabela4" class="display"><thead><tr id="cabecalho4"></tr></thead><tbody></tbody></table>
   </div>
-  <!-- Aba 5 -->
+
+  <!-- Aba 5 - Diabetes -->
   <div id="tab5" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe5" multiple></select></div>
@@ -114,25 +116,33 @@
     </div>
     <table id="tabela5" class="display"><thead><tr id="cabecalho5"></tr></thead><tbody></tbody></table>
   </div>
-  <!-- Aba 6 -->
+
+  <!-- Aba 6 - Saúde da Mulher (com filtro de idade funcionando) -->
   <div id="tab6" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe6" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea6" multiple></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade6" multiple></select></div>
       <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas6" multiple></select></div>
+      <div class="filtro-group">
+        <label>Idade</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="number" id="idadeMaior6" placeholder="maior ou igual a" style="width:90px;">
+          <span>e</span>
+          <input type="number" id="idadeMenor6" placeholder="menor ou igual a" style="width:90px;">
+        </div>
+      </div>
       <button id="btnPdf6">Gerar PDF</button>
     </div>
     <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 7 - Pessoa Idosa (dados a partir da linha 4, colunas B a L, filtros em B=Equipe, C=Microárea, K=Prioridade, L=Boas Práticas) -->
+  <!-- Aba 7 - Pessoa Idosa -->
   <div id="tab7" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe7" multiple></select></div>
       <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea7" multiple></select></div>
       <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade7" multiple></select></div>
-       <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas7" multiple></select></div>
       <button id="btnPdf7">Gerar PDF</button>
     </div>
     <table id="tabela7" class="display"><thead><tr id="cabecalho7"></tr></thead><tbody></tbody></table>
@@ -145,6 +155,7 @@
       document.getElementById(id).classList.add('active');
       document.querySelector(`[onclick="openTab('${id}')"]`).classList.add('active');
     }
+
     const urls = {
       1: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1142482515&single=true&output=csv",
       2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJk3K_1DtxtxvBx5UuRIbsl_OGzNA9AMMx3TbacImInVTl759ziDlxBK0nlwZg1J_iKxjktwvI5FaH/pub?gid=1899832726&single=true&output=csv",
@@ -154,44 +165,52 @@
       6: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLX3B-1FNtn9BZVDseNGuRiPtUUtm13TTx_vI-quwscEMMsTVCp-NjL7b9YH4Cr4vgSI6jAH52M8mk/pub?gid=1711913800&single=true&output=csv",
       7: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsrC8_qNUsaD2Yem4lAii-GtidlqdFcR65dSpjEKxv5u6Xwv2cH11_EkkYzxDFGYAB6d5fbcCN1mMo/pub?gid=1534038569&single=true&output=csv"
     };
+
     function criarTabela(num, headerRowIdx, dataStartIdx, totalCols, filtros = {}) {
-      Papa.parse(urls[num] + "&t=" + Date.now(), {
+      const cacheBuster = "&t=" + Date.now();
+      Papa.parse(urls[num] + cacheBuster, {
         download: true,
         skipEmptyLines: true,
         complete: function(res) {
           const cabecalhosReais = res.data[headerRowIdx].slice(1, totalCols + 1);
           const cabecalhosTabela = ['Nº', ...cabecalhosReais];
           document.getElementById(`cabecalho${num}`).innerHTML = cabecalhosTabela.map(h => `<th>${h||'Sem nome'}</th>`).join('');
+
           let dados = res.data.slice(dataStartIdx);
-          Object.values(filtros).forEach(f => {
-            dados.forEach(r => r[f.idx] = (r[f.idx]||'').toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase());
-          });
+
           const tbody = document.querySelector(`#tabela${num} tbody`);
           tbody.innerHTML = '';
           dados.forEach(row => {
             if (row.length >= totalCols + 1) {
               const tr = document.createElement('tr');
-              tr.innerHTML = '<td></td>' + Array.from({length: totalCols}, (_,i) => `<td>${row[i+1]||''}</td>`).join('');
+              tr.innerHTML = '<td></td>' + Array.from({length: totalCols}, (_, i) => `<td>${row[i+1] || ''}</td>`).join('');
               tbody.appendChild(tr);
             }
           });
+
+          // Destruir tabela anterior se existir
+          if ($.fn.DataTable.isDataTable(`#tabela${num}`)) {
+            $(`#tabela${num}`).DataTable().destroy();
+          }
+
           const tabela = $(`#tabela${num}`).DataTable({
             pageLength: 10,
             destroy: true,
             drawCallback: function() {
-              this.api().rows({page:'current'}).nodes().each((row,i) => {
+              this.api().rows({page:'current'}).nodes().each((row, i) => {
                 $(row).find('td:first').text(i + 1 + this.api().page.info().start);
               });
             }
           });
+
+          // IDs corretos
           const ids = {
-            equipe: num === 1 ? 'filtroEquipe' : `filtroEquipe${num}`,
-            microarea: `filtroMicroarea${num === 1 ? 1 : num}`,
-            status: num <= 2 ? `filtroStatus${num}` : null,
-            quadrimestre: num <= 2 ? `filtroQuadrimestre${num}` : null,
-            prioridade: (num >= 4 && num <= 7) ? `filtroPrioridade${num}` : null,
-            boaspraticas: num >= 4 && num <=7 ? `filtroBoasPraticas${num}` : null
+            equipe: `filtroEquipe${num}`,
+            microarea: `filtroMicroarea${num}`,
+            prioridade: num >= 4 ? `filtroPrioridade${num}` : null,
+            boaspraticas: num >= 4 && num <= 6 ? `filtroBoasPraticas${num}` : null
           };
+
           const todosFiltros = { equipe: {idx:1}, microarea: {idx:2}, ...filtros };
           Object.keys(todosFiltros).forEach(ch => {
             const id = ids[ch];
@@ -199,100 +218,95 @@
               const valores = [...new Set(dados.map(r => r[todosFiltros[ch].idx]).filter(Boolean))].sort();
               const $s = $(`#${id}`).empty();
               valores.forEach(v => $s.append(`<option value="${v}">${v}</option>`));
-              $s.select2({ placeholder: ch==='microarea'?'Todas as microáreas':'Todas', allowClear:true });
+              $s.select2({ placeholder: 'Todas', allowClear: true });
             }
           });
+
+          // Filtros normais
           [
-            {el:`#${ids.equipe}`, col:1},
-            {el:`#${ids.microarea}`, col:2},
-            ...(filtros.status ? [{el:`#${ids.status}`, col:filtros.status.idx}] : []),
-            ...(filtros.quadrimestre ? [{el:`#${ids.quadrimestre}`, col:filtros.quadrimestre.idx}] : []),
-            ...(filtros.prioridade ? [{el:`#${ids.prioridade}`, col:filtros.prioridade.idx}] : []),
-            ...(filtros.boaspraticas ? [{el:`#${ids.boaspraticas}`, col:filtros.boaspraticas.idx}] : [])
+            {el: `#${ids.equipe}`, col: 1},
+            {el: `#${ids.microarea}`, col: 2},
+            ...(filtros.prioridade ? [{el: `#${ids.prioridade}`, col: filtros.prioridade.idx}] : []),
+            ...(filtros.boaspraticas ? [{el: `#${ids.boaspraticas}`, col: filtros.boaspraticas.idx}] : [])
           ].forEach(f => {
-            $(f.el).off('change.filter').on('change.filter', function() {
-              const v = $(this).val() || [];
-              const regex = v.length ? '^(' + v.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
-              tabela.column(f.col).search(regex, true, false).draw();
-            });
+            if (f.el) {
+              $(f.el).off('change.filter').on('change.filter', function() {
+                const v = $(this).val() || [];
+                const regex = v.length ? '^(' + v.map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')$' : '';
+                tabela.column(f.col).search(regex, true, false).draw();
+              });
+            }
           });
-          // FILTRO ESPECIAL DE IDADE GESTACIONAL (≥ e ≤) - apenas aba 3
+
+          // Filtro de idade - Aba 3
           if (num === 3) {
-            const $maior = $('#idadeGestMaior');
-            const $menor = $('#idadeGestMenor');
-            const aplicarFiltroIdade = $.fn.dataTable.util.throttle(function () {
-              const maior = $maior.val() ? parseInt($maior.val(), 10) : null;
-              const menor = $menor.val() ? parseInt($menor.val(), 10) : null;
-              while ($.fn.dataTable.ext.search.length > 0) {
-                $.fn.dataTable.ext.search.pop();
-              }
-              $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                if (settings.nTable !== tabela.table().node()) return true;
-                const valorStr = data[6] ? data[6].toString().trim() : '';
-                if (!valorStr || isNaN(valorStr)) return false;
-                const valor = parseInt(valorStr, 10);
-                if (maior !== null && valor < maior) return false;
-                if (menor !== null && valor > menor) return false;
+            const aplicar = $.fn.dataTable.util.throttle(function() {
+              const maior = $('#idadeGestMaior').val() ? parseInt($('#idadeGestMaior').val()) : null;
+              const menor = $('#idadeGestMenor').val() ? parseInt($('#idadeGestMenor').val()) : null;
+              $.fn.dataTable.ext.search.pop();
+              $.fn.dataTable.ext.search.push((s, d) => {
+                if (s.nTable !== tabela.table().node()) return true;
+                const val = parseInt(d[6] || 0);
+                if (isNaN(val)) return false;
+                if (maior !== null && val < maior) return false;
+                if (menor !== null && val > menor) return false;
                 return true;
               });
               tabela.draw();
             }, 300);
-            $maior.off('keyup change').on('keyup change', aplicarFiltroIdade);
-            $menor.off('keyup change').on('keyup change', aplicarFiltroIdade);
+            $('#idadeGestMaior, #idadeGestMenor').off('keyup change').on('keyup change', aplicar);
           }
-          // Botão PDF
+
+          // Filtro de idade - Aba 6 (agora funciona!)
+          if (num === 6) {
+            const aplicar = $.fn.dataTable.util.throttle(function() {
+              const maior = $('#idadeMaior6').val() ? parseInt($('#idadeMaior6').val()) : null;
+              const menor = $('#idadeMenor6').val() ? parseInt($('#idadeMenor6').val()) : null;
+              $.fn.dataTable.ext.search.pop();
+              $.fn.dataTable.ext.search.push((s, d) => {
+                if (s.nTable !== tabela.table().node()) return true;
+                const val = parseInt(d[6] || 0);
+                if (isNaN(val)) return false;
+                if (maior !== null && val < maior) return false;
+                if (menor !== null && val > menor) return false;
+                return true;
+              });
+              tabela.draw();
+            }, 300);
+            $('#idadeMaior6, #idadeMenor6').off('keyup change').on('keyup change', aplicar);
+          }
+
+          // PDF
           document.getElementById(`btnPdf${num}`).onclick = function() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
-            const equipeSel = $(`#${ids.equipe}`).val() || [];
-            const microSel = $(`#${ids.microarea}`).val() || [];
-            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher','Pessoa Idosa'];
-            let titulo = titulos[num];
-            if (equipeSel.length === 1) titulo += ` - Equipe ${equipeSel[0]}`;
-            else if (equipeSel.length > 1) titulo += ` - Equipes ${equipeSel.join(', ')}`;
-            if (microSel.length) titulo += (equipeSel.length ? ' | ' : ' - ') + `Microárea ${microSel.join(', ')}`;
-            doc.setFontSize(14);
-            doc.text(titulo.length > 110 ? titulo.substring(0,107)+'...' : titulo, 14, 25);
+            const doc = new jsPDF('l', 'mm', 'a4');
             const rows = tabela.rows({search:'applied'}).data().toArray();
-            if (!rows.length) return alert('Nenhum registro encontrado');
-            const incluirEquipe = equipeSel.length !== 1;
-            const head = ['Nº'];
-            if (incluirEquipe) head.push(cabecalhosReais[0]);
-            head.push(cabecalhosReais[1]);
-            head.push(...cabecalhosReais.slice(2));
-            const body = rows.map((r, i) => {
-              const linha = [(i + 1).toString()];
-              if (incluirEquipe) linha.push(r[1]);
-              linha.push(r[2]);
-              for (let j = 3; j < r.length; j++) linha.push(r[j] || '');
-              return linha;
-            });
-            doc.autoTable({
-              head: [head],
-              body: body,
-              startY: 35,
-              theme: 'striped',
-              styles: { halign: 'center', valign: 'middle', fontSize: 7.5 },
-              headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', valign: 'middle' },
-              margin: { top: 12, bottom:12, left:8, right:8 },
-              columnStyles: { 0: { cellWidth: 12 } }
-            });
-            let nomeArquivo = titulos[num].toLowerCase().replace(/[^a-z0-9]/gi,'-');
-            if (equipeSel.length === 1) nomeArquivo += `-eq${equipeSel[0]}`;
-            else if (equipeSel.length > 1) nomeArquivo += `-varias-equipes`;
-            doc.save(nomeArquivo + '.pdf');
+            if (!rows.length) return alert('Nenhum dado para exportar');
+
+            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação','Hipertensão','Diabetes','Saúde da Mulher','Pessoa Idosa'];
+            let titulo = titulos[num];
+
+            doc.setFontSize(14);
+            doc.text(titulo, 14, 20);
+
+            const head = [['Nº', ...cabecalhosReais]];
+            const body = rows.map((r, i) => [i+1, ...r.slice(1)]);
+
+            doc.autoTable({ head, body, startY: 30, theme: 'grid', styles: { fontSize: 8 } });
+            doc.save(titulo + '.pdf');
           };
         }
       });
     }
+
     document.addEventListener('DOMContentLoaded', () => {
       criarTabela(1, 4, 5, 14, {status:{idx:12}, quadrimestre:{idx:14}});
       criarTabela(2, 4, 5, 12, {status:{idx:11}, quadrimestre:{idx:12}});
-      criarTabela(3, 4, 5, 18, {idadeGestacional: {idx:6}});
+      criarTabela(3, 4, 5, 18);
       criarTabela(4, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});
       criarTabela(5, 3, 4, 13, {prioridade:{idx:12}, boaspraticas:{idx:13}});
       criarTabela(6, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});
-      criarTabela(7, 3, 4, 11, {prioridade:{idx:10}, boaspraticas:{idx:11}});  <!-- B=1 (Equipe), C=2 (Microárea), K=10 (Prioridade) -->
+      criarTabela(7, 3, 4, 10, {prioridade:{idx:10}});
     });
   </script>
 </body>
