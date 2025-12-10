@@ -48,7 +48,7 @@
     <button class="tab-button" onclick="openTab('tab4')">Hipertensão</button>
     <button class="tab-button" onclick="openTab('tab5')">Diabetes</button>
     <button class="tab-button" onclick="openTab('tab6')">Saúde da Mulher</button>
-    <button class="tab-button" onclick="openTab('tab7')">Nova Tabela</button>
+    <button class="tab-button" onclick="openTab('tab7')">Pessoa Idosa</button>
   </div>
 
   <!-- Aba 1 -->
@@ -126,7 +126,7 @@
     <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- Aba 7 - Nova Tabela (dados a partir da linha 4, colunas B a K, filtros em B=Equipe, C=Microárea, K=Prioridade) -->
+  <!-- Aba 7 - Pessoa Idosa (dados a partir da linha 4, colunas B a K, filtros em B=Equipe, C=Microárea, K=Prioridade) -->
   <div id="tab7" class="tab-content">
     <div class="filtros">
       <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe7" multiple></select></div>
@@ -245,7 +245,7 @@
             const doc = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
             const equipeSel = $(`#${ids.equipe}`).val() || [];
             const microSel = $(`#${ids.microarea}`).val() || [];
-            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher','Nova Tabela'];
+            const titulos = ['','Desenv. Infantil (exceto vacinas)','Desenv. Infantil (vacinas)','Gestação e Puerpério','Hipertensão','Diabetes','Saúde da Mulher','Pessoa Idosa'];
             let titulo = titulos[num];
             if (equipeSel.length === 1) titulo += ` - Equipe ${equipeSel[0]}`;
             else if (equipeSel.length > 1) titulo += ` - Equipes ${equipeSel.join(', ')}`;
