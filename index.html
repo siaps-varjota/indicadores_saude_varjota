@@ -114,17 +114,28 @@
     </div>
     <table id="tabela5" class="display"><thead><tr id="cabecalho5"></tr></thead><tbody></tbody></table>
   </div>
-  <!-- Aba 6 -->
-  <div id="tab6" class="tab-content">
-    <div class="filtros">
-      <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe6" multiple></select></div>
-      <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea6" multiple></select></div>
-      <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade6" multiple></select></div>
-      <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas6" multiple></select></div>
-      <button id="btnPdf6">Gerar PDF</button>
+  <!-- Aba 6 - Saúde da Mulher (agora com filtro de idade) -->
+<div id="tab6" class="tab-content">
+  <div class="filtros">
+    <div class="filtro-group"><label>Equipe</label><select id="filtroEquipe6" multiple></select></div>
+    <div class="filtro-group"><label>Microárea</label><select id="filtroMicroarea6" multiple></select></div>
+    <div class="filtro-group"><label>Prioridade</label><select id="filtroPrioridade6" multiple></select></div>
+    <div class="filtro-group"><label>Boas Práticas</label><select id="filtroBoasPraticas6" multiple></select></div>
+
+    <!-- NOVO FILTRO DE IDADE (igual ao da aba 3) -->
+    <div class="filtro-group">
+      <label>Idade</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <input type="number" id="idadeMaior6" placeholder="≥" style="width:90px;" title="Maior ou igual a">
+        <span>e</span>
+        <input type="number" id="idadeMenor6" placeholder="≤" style="width:90px;" title="Menor ou igual a">
+      </div>
     </div>
-    <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
+
+    <button id="btnPdf6">Gerar PDF</button>
   </div>
+  <table id="tabela6" class="display"><thead><tr id="cabecalho6"></tr></thead><tbody></tbody></table>
+</div>
 
   <!-- Aba 7 - Pessoa Idosa (dados a partir da linha 4, colunas B a L, filtros em B=Equipe, C=Microárea, K=Prioridade, L=Boas Práticas) -->
   <div id="tab7" class="tab-content">
