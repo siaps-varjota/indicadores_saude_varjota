@@ -227,7 +227,7 @@
               tabela.column(f.col).search(regex, true, false).draw();
             });
           });
-          // FILTRO ESPECIAL DE IDADE GESTACIONAL (≥ e ≤) - apenas aba 3
+                   // FILTRO ESPECIAL DE IDADE GESTACIONAL (≥ e ≤) - apenas aba 3
           if (num === 3) {
             const $maior = $('#idadeGestMaior');
             const $menor = $('#idadeGestMenor');
@@ -245,6 +245,37 @@
                 if (maior !== null && valor < maior) return false;
                 if (menor !== null && valor > menor) return false;
                 return true;
+              });
+              tabela.draw();
+            }, 300);
+            $maior.off('keyup change').on('keyup change', aplicarFiltroIdade);
+            $menor.off('keyup change').on('keyup change', aplicarFiltroIdade);
+          }
+
+          // NOVO: FILTRO DE IDADE NA ABA 6 (coluna 6)
+          if (num === 6) {
+            const $maior = $('#idadeMaior6');
+            const $menor = $('#idadeMenor6');
+            const aplicarFiltroIdade6 = $.fn.dataTable.util.throttle(function () {
+              const maior = $maior.val() ? parseInt($maior.val(), 10) : null;
+              const menor = $menor.val() ? parseInt($menor.val(), 10) : null;
+              while ($.fn.dataTable.ext.search.length > 0) {
+                $.fn.dataTable.ext.search.pop();
+              }
+              $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                if (settings.nTable !== tabela.table().node()) return true;
+                const valorStr = data[6] ? data[6].toString().trim() : '';
+                if (!valorStr || isNaN(valorStr)) return false;
+                const valor = parseInt(valorStr, 10);
+                if (maior !== null && valor < maior) return false;
+                if (menor !== null && valor > menor) return false;
+                return true;
+              });
+              tabela.draw();
+            }, 300);
+            $maior.off('keyup change').on('keyup change', aplicarFiltroIdade6);
+            $menor.off('keyup change').on('keyup change', aplicarFiltroIdade6);
+          }
               });
               tabela.draw();
             }, 300);
